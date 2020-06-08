@@ -50,11 +50,11 @@ namespace HiSpaceListingService.Controllers
 		/// Gets the Listing by ListingId.
 		/// </summary>
 		/// <returns>The Listing by ListingId.</returns>
-		// GET: api/Listing/GetListing/1
-		//[HttpGet("GetListing/{ListingId}")]
+		// GET: api/Listing/GetListingByListingId/1
+		//[HttpGet("GetListingByListingId/{ListingId}")]
 		[HttpGet]
-		[Route("GetListing/{ListingId}")]
-		public async Task<ActionResult<Listing>> GetListing(int ListingId)
+		[Route("GetListingByListingId/{ListingId}")]
+		public async Task<ActionResult<Listing>> GetListingByListingId(int ListingId)
 		{
 			var listing = await _context.Listings.FindAsync(ListingId);
 
