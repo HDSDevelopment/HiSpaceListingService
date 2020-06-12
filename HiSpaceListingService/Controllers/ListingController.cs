@@ -87,10 +87,10 @@ namespace HiSpaceListingService.Controllers
 		/// Update the Listing by ListingId.
 		/// </summary>
 		/// <returns>The Listing by ListingId.</returns>
-		// PUT: api/Listing/UpdateListing
+		// PUT: api/Listing/UpdateListingByListingId/1
 		[HttpPut]
-		[Route("UpdateListing/{ListingId}")]
-		public async Task<IActionResult> UpdateListing(int ListingId, [FromBody]  Listing listing)
+		[Route("UpdateListingByListingId/{ListingId}")]
+		public async Task<IActionResult> UpdateListingByListingId(int ListingId, [FromBody]  Listing listing)
 		{
 			if (ListingId != listing.ListingId || listing == null)
 			{

@@ -32,6 +32,64 @@ namespace HiSpaceListingService.Controllers
 			return await _context.ListingImagess.Where(d => d.ListingId == ListingID).ToListAsync();
 		}
 
+		// GET: api/Addons/GetImageByListingImagesID/1
+		[HttpGet("GetImageByListingImagesID/{ListingImagesId}")]
+		public async Task<ActionResult<ListingImages>> GetImageByListingImagesID(int ListingImagesID)
+		{
+			var listingImages = await _context.ListingImagess.FirstOrDefaultAsync(d => d.ListingImagesId == ListingImagesID);
+
+			if (listingImages == null)
+			{
+				return NotFound();
+			}
+
+			return listingImages;
+		}
+
+		/// <summary>
+		/// Post the ListingImages.
+		/// </summary>
+		/// <returns>Add new Image.</returns>
+		// POST: api/Addons/CreateImage
+		[HttpPost("CreateImage")]
+		public async Task<ActionResult<ListingImages>> CreateImage([FromBody] ListingImages listingImages)
+		{
+			_context.ListingImagess.Add(listingImages);
+			await _context.SaveChangesAsync();
+
+			return CreatedAtAction("GetImageByListingImagesID", new { ListingImagesId = listingImages.ListingImagesId }, listingImages);
+		}
+
+		// PUT: api/Addons/UpdateImage/1
+		[HttpPut("UpdateImage/{ListingImagesId}")]
+		public async Task<IActionResult> UpdateImage(int ListingImagesId, [FromBody] ListingImages listingImages)
+		{
+			if (ListingImagesId != listingImages.ListingImagesId || listingImages == null)
+			{
+				return BadRequest();
+			}
+
+			_context.Entry(listingImages).State = EntityState.Modified;
+
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				if (!WorkingHoursExists(ListingImagesId))
+				{
+					return NotFound();
+				}
+				else
+				{
+					throw;
+				}
+			}
+
+			return CreatedAtAction("GetImageByListingImagesID", new { ListingImagesId = listingImages.ListingImagesId }, listingImages);
+		}
+
 		// GET: api/Addons/GetWoringHoursByListingID/1
 		[HttpGet("GetWoringHoursByListingID/{ListingId}")]
 		public async Task<ActionResult<WorkingHours>> GetWoringHoursByListingID(int ListingId)
