@@ -33,7 +33,7 @@ namespace HiSpaceListingService.Controllers
 		}
 
 		// GET: api/Addons/GetImageByListingImagesID/1
-		[HttpGet("GetImageByListingImagesID/{ListingImagesId}")]
+		[HttpGet("GetImageByListingImagesID/{ListingImagesID}")]
 		public async Task<ActionResult<ListingImages>> GetImageByListingImagesID(int ListingImagesID)
 		{
 			var listingImages = await _context.ListingImagess.FirstOrDefaultAsync(d => d.ListingImagesId == ListingImagesID);
@@ -44,6 +44,20 @@ namespace HiSpaceListingService.Controllers
 			}
 
 			return listingImages;
+		}
+
+		//DELETE: api/Addons/DeleteImage/1
+		[HttpDelete("DeleteImage/{ListingImagesID}")]
+		public async Task<ActionResult<ListingImages>> DeleteImage(int ListingImagesID)
+		{
+			var image = await _context.ListingImagess.FindAsync(ListingImagesID);
+			if(image == null)
+			{
+				return NotFound();
+			}
+			_context.ListingImagess.Remove(image);
+			await _context.SaveChangesAsync();
+			return image;
 		}
 
 		/// <summary>

@@ -62,8 +62,17 @@ namespace HiSpaceListingService.Controllers
 		[HttpGet]
 		[Route("GetUsers")]
 		public async Task<ActionResult<IEnumerable<User>>> GetUsers()
-		{
+			{
+			try
+			{
 			return await _context.Users.ToListAsync();
+			}
+			catch (Exception ex)
+			{
+
+				throw ex;
+			}
+
 		}
 
 		/// <summary>
