@@ -19,6 +19,7 @@ namespace HiSpaceListingModels
 		public DateTime? CreatedDateTime { set; get; }
 		public int? ModifyBy { set; get; }
 		public DateTime? ModifyDateTime { set; get; }
+		public string DocumentUrl { set; get; }
 
 	}
 }

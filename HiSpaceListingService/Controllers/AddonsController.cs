@@ -32,6 +32,8 @@ namespace HiSpaceListingService.Controllers
 			return await _context.ListingImagess.Where(d => d.ListingId == ListingID).ToListAsync();
 		}
 
+		
+
 		// GET: api/Addons/GetImageByListingImagesID/1
 		[HttpGet("GetImageByListingImagesID/{ListingImagesID}")]
 		public async Task<ActionResult<ListingImages>> GetImageByListingImagesID(int ListingImagesID)
@@ -91,7 +93,7 @@ namespace HiSpaceListingService.Controllers
 			}
 			catch (DbUpdateConcurrencyException)
 			{
-				if (!WorkingHoursExists(ListingImagesId))
+				if (!ListingImagesExists(ListingImagesId))
 				{
 					return NotFound();
 				}
@@ -102,6 +104,97 @@ namespace HiSpaceListingService.Controllers
 			}
 
 			return CreatedAtAction("GetImageByListingImagesID", new { ListingImagesId = listingImages.ListingImagesId }, listingImages);
+		}
+		private bool ListingImagesExists(int ListingImagesId)
+		{
+			return _context.ListingImagess.Any(e => e.ListingImagesId == ListingImagesId);
+		}
+
+		/// <summary>
+		/// Gets the list of all Project.
+		/// </summary>
+		/// <returns>The list of Project.</returns>
+		// GET: api/Addons/GetProjectByListingId/1
+		[HttpGet("GetProjectByListingId/{ListingID}")]
+		public async Task<ActionResult<IEnumerable<REProfessionalMaster>>> GetProjectByListingId(int ListingID)
+		{
+			return await _context.REProfessionalMasters.Where(d => d.ListingId == ListingID).ToListAsync();
+		}
+
+		// GET: api/Addons/GetImageByREProfessionalMasterId/1
+		[HttpGet("GetImageByREProfessionalMasterId/{REProfessionalMasterID}")]
+		public async Task<ActionResult<REProfessionalMaster>> GetImageByREProfessionalMasterId(int REProfessionalMasterID)
+		{
+			var project = await _context.REProfessionalMasters.FirstOrDefaultAsync(d => d.REProfessionalMasterId == REProfessionalMasterID);
+
+			if (project == null)
+			{
+				return NotFound();
+			}
+
+			return project;
+		}
+
+		//DELETE: api/Addons/DeleteProject/1
+		[HttpDelete("DeleteProject/{REProfessionalMasterID}")]
+		public async Task<ActionResult<REProfessionalMaster>> DeleteProject(int REProfessionalMasterID)
+		{
+			var project = await _context.REProfessionalMasters.FindAsync(REProfessionalMasterID);
+			if (project == null)
+			{
+				return NotFound();
+			}
+			_context.REProfessionalMasters.Remove(project);
+			await _context.SaveChangesAsync();
+			return project;
+		}
+
+		/// <summary>
+		/// Post the ReProfessionalProjects.
+		/// </summary>
+		/// <returns>Add new project.</returns>
+		// POST: api/Addons/CreateProject
+		[HttpPost("CreateProject")]
+		public async Task<ActionResult<REProfessionalMaster>> CreateProject([FromBody] REProfessionalMaster rEProfessionalMaster)
+		{
+			_context.REProfessionalMasters.Add(rEProfessionalMaster);
+			await _context.SaveChangesAsync();
+
+			return CreatedAtAction("GetImageByREProfessionalMasterId", new { REProfessionalMasterId = rEProfessionalMaster.REProfessionalMasterId }, rEProfessionalMaster);
+		}
+
+		// PUT: api/Addons/UpdateProject/1
+		[HttpPut("UpdateProject/{REProfessionalMasterId}")]
+		public async Task<IActionResult> UpdateProject(int REProfessionalMasterId, [FromBody] REProfessionalMaster rEProfessionalMaster)
+		{
+			if (REProfessionalMasterId != rEProfessionalMaster.REProfessionalMasterId || rEProfessionalMaster == null)
+			{
+				return BadRequest();
+			}
+
+			_context.Entry(rEProfessionalMaster).State = EntityState.Modified;
+
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				if (!ProjectExists(REProfessionalMasterId))
+				{
+					return NotFound();
+				}
+				else
+				{
+					throw;
+				}
+			}
+
+			return CreatedAtAction("GetImageByREProfessionalMasterId", new { REProfessionalMasterId = rEProfessionalMaster.REProfessionalMasterId }, rEProfessionalMaster);
+		}
+		private bool ProjectExists(int REProfessionalMasterId)
+		{
+			return _context.REProfessionalMasters.Any(e => e.REProfessionalMasterId == REProfessionalMasterId);
 		}
 
 		// GET: api/Addons/GetWoringHoursByListingID/1
