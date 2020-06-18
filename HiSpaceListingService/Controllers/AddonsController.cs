@@ -32,8 +32,6 @@ namespace HiSpaceListingService.Controllers
 			return await _context.ListingImagess.Where(d => d.ListingId == ListingID).ToListAsync();
 		}
 
-		
-
 		// GET: api/Addons/GetImageByListingImagesID/1
 		[HttpGet("GetImageByListingImagesID/{ListingImagesID}")]
 		public async Task<ActionResult<ListingImages>> GetImageByListingImagesID(int ListingImagesID)
@@ -260,5 +258,93 @@ namespace HiSpaceListingService.Controllers
 			return _context.WorkingHourss.Any(e => e.ListingId == ListingId);
 		}
 
+
+		/// <summary>
+		/// Gets the list of all Amenity.
+		/// </summary>
+		/// <returns>The list of Amenity.</returns>
+		// GET: api/Addons/GetAmenityByListingId/1
+		[HttpGet("GetAmenityByListingId/{ListingID}")]
+		public async Task<ActionResult<IEnumerable<Amenity>>> GetAmenityByListingId(int ListingID)
+		{
+			return await _context.Amenitys.Where(d => d.ListingId == ListingID).ToListAsync();
+		}
+
+		// GET: api/Addons/GetImageByAmenityId/1
+		[HttpGet("GetImageByAmenityId/{AmenityID}")]
+		public async Task<ActionResult<Amenity>> GetImageByAmenityId(int AmenityID)
+		{
+			var amenity = await _context.Amenitys.FirstOrDefaultAsync(d => d.AmenityId == AmenityID);
+
+			if (amenity == null)
+			{
+				return NotFound();
+			}
+
+			return amenity;
+		}
+
+		//DELETE: api/Addons/DeleteAmenity/1
+		[HttpDelete("DeleteAmenity/{AmenityID}")]
+		public async Task<ActionResult<Amenity>> DeleteAmenity(int AmenityID)
+		{
+			var amenity = await _context.Amenitys.FindAsync(AmenityID);
+			if (amenity == null)
+			{
+				return NotFound();
+			}
+			_context.Amenitys.Remove(amenity);
+			await _context.SaveChangesAsync();
+			return amenity;
+		}
+
+		/// <summary>
+		/// Post the Amenity.
+		/// </summary>
+		/// <returns>Add new Amenity.</returns>
+		// POST: api/Addons/CreateAmenity
+		[HttpPost("CreateAmenity")]
+		public async Task<ActionResult<Amenity>> CreateAmenity([FromBody] Amenity amenity)
+		{
+			_context.Amenitys.Add(amenity);
+			await _context.SaveChangesAsync();
+
+			return CreatedAtAction("GetImageByAmenityId", new { AmenityId = amenity.AmenityId }, amenity);
+		}
+
+
+		// PUT: api/Addons/UpdateAmenity/1
+		[HttpPut("UpdateAmenity/{AmenityId}")]
+		public async Task<IActionResult> UpdateAmenity(int AmenityId, [FromBody] Amenity amenity)
+		{
+			if (AmenityId != amenity.AmenityId || amenity == null)
+			{
+				return BadRequest();
+			}
+
+			_context.Entry(amenity).State = EntityState.Modified;
+
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				if (!AmenitysExists(AmenityId))
+				{
+					return NotFound();
+				}
+				else
+				{
+					throw;
+				}
+			}
+
+			return CreatedAtAction("GetImageByAmenityId", new { AmenityId = amenity.AmenityId }, amenity);
+		}
+		private bool AmenitysExists(int AmenityId)
+		{
+			return _context.Amenitys.Any(e => e.AmenityId == AmenityId);
+		}
 	}
 }
