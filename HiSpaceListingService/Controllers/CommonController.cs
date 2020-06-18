@@ -174,5 +174,15 @@ namespace HiSpaceListingService.Controllers
 
 			return await _context.AmenityMasters.OrderBy(d => d.Name).ToListAsync();
 		}
+
+		// GET: api/Common/GetFacilityMasterList/
+		[HttpGet]
+		[Route("GetFacilityMasterList")]
+		[HttpGet]
+		public async Task<ActionResult<IEnumerable<FacilityMaster>>> GetFacilityMasterList()
+		{
+
+			return await _context.FacilityMasters.OrderBy(d => d.Name).ToListAsync();
+		}
 	}
 }

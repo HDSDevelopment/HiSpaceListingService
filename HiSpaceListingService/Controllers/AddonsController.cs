@@ -258,7 +258,6 @@ namespace HiSpaceListingService.Controllers
 			return _context.WorkingHourss.Any(e => e.ListingId == ListingId);
 		}
 
-
 		/// <summary>
 		/// Gets the list of all Amenity.
 		/// </summary>
@@ -270,9 +269,9 @@ namespace HiSpaceListingService.Controllers
 			return await _context.Amenitys.Where(d => d.ListingId == ListingID).ToListAsync();
 		}
 
-		// GET: api/Addons/GetImageByAmenityId/1
-		[HttpGet("GetImageByAmenityId/{AmenityID}")]
-		public async Task<ActionResult<Amenity>> GetImageByAmenityId(int AmenityID)
+		// GET: api/Addons/GetAmenityByAmenityId/1
+		[HttpGet("GetAmenityByAmenityId/{AmenityID}")]
+		public async Task<ActionResult<Amenity>> GetAmenityByAmenityId(int AmenityID)
 		{
 			var amenity = await _context.Amenitys.FirstOrDefaultAsync(d => d.AmenityId == AmenityID);
 
@@ -309,9 +308,8 @@ namespace HiSpaceListingService.Controllers
 			_context.Amenitys.Add(amenity);
 			await _context.SaveChangesAsync();
 
-			return CreatedAtAction("GetImageByAmenityId", new { AmenityId = amenity.AmenityId }, amenity);
+			return CreatedAtAction("GetAmenityByAmenityId", new { AmenityId = amenity.AmenityId }, amenity);
 		}
-
 
 		// PUT: api/Addons/UpdateAmenity/1
 		[HttpPut("UpdateAmenity/{AmenityId}")]
@@ -340,11 +338,98 @@ namespace HiSpaceListingService.Controllers
 				}
 			}
 
-			return CreatedAtAction("GetImageByAmenityId", new { AmenityId = amenity.AmenityId }, amenity);
+			return CreatedAtAction("GetAmenityByAmenityId", new { AmenityId = amenity.AmenityId }, amenity);
 		}
 		private bool AmenitysExists(int AmenityId)
 		{
 			return _context.Amenitys.Any(e => e.AmenityId == AmenityId);
+		}
+
+		/// <summary>
+		/// Gets the list of all Facility.
+		/// </summary>
+		/// <returns>The list of Facility.</returns>
+		// GET: api/Addons/GetFacilityByListingId/1
+		[HttpGet("GetFacilityByListingId/{ListingID}")]
+		public async Task<ActionResult<IEnumerable<Facility>>> GetFacilityByListingId(int ListingID)
+		{
+			return await _context.Facilitys.Where(d => d.ListingId == ListingID).ToListAsync();
+		}
+
+		// GET: api/Addons/GetFacilityByFacilityId/1
+		[HttpGet("GetFacilityByFacilityId/{FacilityID}")]
+		public async Task<ActionResult<Facility>> GetFacilityByFacilityId(int FacilityID)
+		{
+			var facility = await _context.Facilitys.FirstOrDefaultAsync(d => d.FacilityId == FacilityID);
+
+			if (facility == null)
+			{
+				return NotFound();
+			}
+
+			return facility;
+		}
+
+		//DELETE: api/Addons/DeleteFacility/1
+		[HttpDelete("DeleteFacility/{FacilityID}")]
+		public async Task<ActionResult<Facility>> DeleteFacility(int FacilityID)
+		{
+			var facility = await _context.Facilitys.FindAsync(FacilityID);
+			if (facility == null)
+			{
+				return NotFound();
+			}
+			_context.Facilitys.Remove(facility);
+			await _context.SaveChangesAsync();
+			return facility;
+		}
+
+		/// <summary>
+		/// Post the Facility.
+		/// </summary>
+		/// <returns>Add new Facility.</returns>
+		// POST: api/Addons/CreateFacility
+		[HttpPost("CreateFacility")]
+		public async Task<ActionResult<Facility>> CreateFacility([FromBody] Facility facility)
+		{
+			_context.Facilitys.Add(facility);
+			await _context.SaveChangesAsync();
+
+			return CreatedAtAction("GetFacilityByFacilityId", new { FacilityId = facility.FacilityId }, facility);
+		}
+
+		// PUT: api/Addons/UpdateFacility/1
+		[HttpPut("UpdateFacility/{FacilityId}")]
+		public async Task<IActionResult> UpdateFacility(int FacilityId, [FromBody] Facility facility)
+		{
+			if (FacilityId != facility.FacilityId || facility == null)
+			{
+				return BadRequest();
+			}
+
+			_context.Entry(facility).State = EntityState.Modified;
+
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				if (!FacilityExists(FacilityId))
+				{
+					return NotFound();
+				}
+				else
+				{
+					throw;
+				}
+			}
+
+			return CreatedAtAction("GetFacilityByFacilityId", new { FacilityId = facility.FacilityId }, facility);
+		}
+		private bool FacilityExists(int FacilityId)
+		{
+			return _context.Facilitys.Any(e => e.FacilityId == FacilityId);
 		}
 	}
 }

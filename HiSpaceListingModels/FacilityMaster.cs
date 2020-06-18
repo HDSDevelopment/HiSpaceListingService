@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HiSpaceListingModels
 {
+	[Table("FacilityMaster")]
 	public class FacilityMaster
 	{
 		[Key]
