@@ -80,7 +80,7 @@ namespace HiSpaceListingService.Controllers
 			_context.Listings.Add(listing);
 			await _context.SaveChangesAsync();
 
-			return CreatedAtAction("GetListing", new { ListingId = listing.ListingId }, listing);
+			return CreatedAtAction("GetListingByListingId", new { ListingId = listing.ListingId }, listing);
 		}
 
 		/// <summary>
@@ -197,7 +197,7 @@ namespace HiSpaceListingService.Controllers
 				property.AvailableAmenities = (from PA in _context.Amenitys where PA.ListingId == item.ListingId && PA.Status == true select new Amenity() { AmenityId = PA.AmenityId, Name = PA.Name}).ToList().Count();
 				property.AvailableFacilities = (from PF in _context.Facilitys where PF.ListingId == item.ListingId && PF.Status == true select new Facility() {  FacilityId = PF.FacilityId, Name = PF.Name }).ToList().Count();
 				property.AvailableProjects = (from PF in _context.REProfessionalMasters where PF.ListingId == item.ListingId && PF.Status == true select new REProfessionalMaster() { REProfessionalMasterId = PF.REProfessionalMasterId, ProjectName = PF.ProjectName }).ToList().Count();
-
+				property.ListingImagesList = _context.ListingImagess.Where(d => d.ListingId == item.ListingId).ToList();
 				vModel.Add(property);
 			}
 			
