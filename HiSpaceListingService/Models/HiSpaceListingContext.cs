@@ -22,5 +22,7 @@ namespace HiSpaceListingService.Models
 		public DbSet<WorkingHours> WorkingHourss { get; set; }
 		public DbSet<AmenityMaster> AmenityMasters { get; set; }
 		public DbSet<FacilityMaster> FacilityMasters { get; set; }
+		public DbSet<GreenBuildingCheck> GreenBuildingChecks { get; set; }
+		public DbSet<HealthCheck> HealthChecks { get; set; }
 	}
 }
