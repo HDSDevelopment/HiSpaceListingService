@@ -198,6 +198,7 @@ namespace HiSpaceListingService.Controllers
 				property.AvailableFacilities = (from PF in _context.Facilitys where PF.ListingId == item.ListingId && PF.Status == true select new Facility() {  FacilityId = PF.FacilityId, Name = PF.Name }).ToList().Count();
 				property.AvailableProjects = (from PF in _context.REProfessionalMasters where PF.ListingId == item.ListingId && PF.Status == true select new REProfessionalMaster() { REProfessionalMasterId = PF.REProfessionalMasterId, ProjectName = PF.ProjectName }).ToList().Count();
 				property.ListingImagesList = _context.ListingImagess.Where(d => d.ListingId == item.ListingId).ToList();
+				property.AvailableHealthCheck = (from AHC in _context.HealthChecks where AHC.ListingId == item.ListingId && AHC.Status == true select new HealthCheck() { HealthCheckId = AHC.HealthCheckId }).ToList().Count();
 				vModel.Add(property);
 			}
 			
@@ -252,6 +253,7 @@ namespace HiSpaceListingService.Controllers
 			propertyDetails.REProfessionalMasters = _context.REProfessionalMasters.Where(d => d.Status == true && d.ListingId == property.ListingId).ToList();
 			var propertyCount = _context.Listings.Where(d => d.UserId == property.UserId && d.Status == true).ToList();
 			propertyDetails.ListerPropertyCount = propertyCount.Count();
+			propertyDetails.HealthCheck = _context.HealthChecks.SingleOrDefault(d => d.ListingId == property.ListingId);
 			//foreach(var amenity in amenities)
 			//{
 

@@ -431,5 +431,85 @@ namespace HiSpaceListingService.Controllers
 		{
 			return _context.Facilitys.Any(e => e.FacilityId == FacilityId);
 		}
+
+		/// <summary>
+		/// Post the Health check.
+		/// </summary>
+		/// <returns>Add new Health check.</returns>
+		// POST: api/Addons/CreateHealthCheck
+		[HttpPost("CreateHealthCheck")]
+		public async Task<ActionResult<HealthCheck>> CreateHealthCheck([FromBody] HealthCheck healthCheck)
+		{
+			_context.HealthChecks.Add(healthCheck);
+			await _context.SaveChangesAsync();
+
+			return CreatedAtAction("GetHealthCheckByHealthCheckId", new { HealthCheckId = healthCheck.HealthCheckId }, healthCheck);
+		}
+
+		// GET: api/Addons/GetHealthCheckByHealthCheckId/1
+		[HttpGet("GetHealthCheckByHealthCheckId/{HealthCheckID}")]
+		public async Task<ActionResult<HealthCheck>> GetHealthCheckByHealthCheckId(int HealthCheckID)
+		{
+			var healthCheck = await _context.HealthChecks.FirstOrDefaultAsync(d => d.HealthCheckId == HealthCheckID);
+
+			if (healthCheck == null)
+			{
+				return NotFound();
+			}
+
+			return healthCheck;
+		}
+
+		/// <summary>
+		/// Gets the list of all Health Check.
+		/// </summary>
+		/// <returns>The list of Health Check.</returns>
+		// GET: api/Addons/GetHealthCheckByListingId/1
+		[HttpGet("GetHealthCheckByListingId/{ListingID}")]
+		public async Task<ActionResult<HealthCheck>> GetHealthCheckByListingId(int ListingID)
+		{
+			var healthChecks = await _context.HealthChecks.FirstOrDefaultAsync(d => d.ListingId == ListingID);
+
+			if (healthChecks == null)
+			{
+				return NotFound();
+			}
+
+			return healthChecks;
+		}
+
+		// PUT: api/Addons/UpdateHealthCheck/1
+		[HttpPut("UpdateHealthCheck/{HealthCheckId}")]
+		public async Task<IActionResult> UpdateHealthCheck(int HealthCheckId, [FromBody] HealthCheck healthCheck)
+		{
+			if (HealthCheckId != healthCheck.HealthCheckId || healthCheck == null)
+			{
+				return BadRequest();
+			}
+
+			_context.Entry(healthCheck).State = EntityState.Modified;
+
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				if (!HealthCheckExists(HealthCheckId))
+				{
+					return NotFound();
+				}
+				else
+				{
+					throw;
+				}
+			}
+
+			return CreatedAtAction("GetHealthCheckByHealthCheckId", new { HealthCheckId = healthCheck.HealthCheckId }, healthCheck);
+		}
+		private bool HealthCheckExists(int HealthCheckId)
+		{
+			return _context.HealthChecks.Any(e => e.HealthCheckId == HealthCheckId);
+		}
 	}
 }
