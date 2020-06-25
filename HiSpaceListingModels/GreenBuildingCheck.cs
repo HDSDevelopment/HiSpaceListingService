@@ -46,5 +46,9 @@ namespace HiSpaceListingModels
 		public DateTime? CreatedDateTime { set; get; }
 		public int? ModifyBy { set; get; }
 		public DateTime? ModifyDateTime { set; get; }
+		public string CertificationStatus { set; get; }
+		public string CertifiedBy { set; get; }
+		public string IntrestedToApply { set; get; }
+		public string CertificationNumber { set; get; }
 	}
 }

@@ -511,5 +511,85 @@ namespace HiSpaceListingService.Controllers
 		{
 			return _context.HealthChecks.Any(e => e.HealthCheckId == HealthCheckId);
 		}
+
+		/// <summary>
+		/// Post the Green building check.
+		/// </summary>
+		/// <returns>Add new Green building check.</returns>
+		// POST: api/Addons/CreateGreenBuildingCheck
+		[HttpPost("CreateGreenBuildingCheck")]
+		public async Task<ActionResult<GreenBuildingCheck>> CreateGreenBuildingCheck([FromBody] GreenBuildingCheck greenBuildingCheck)
+		{
+			_context.GreenBuildingChecks.Add(greenBuildingCheck);
+			await _context.SaveChangesAsync();
+
+			return CreatedAtAction("GetGreenBuildingCheckByGreenBuildingCheckId", new { GreenBuildingCheckId = greenBuildingCheck.GreenBuildingCheckId }, greenBuildingCheck);
+		}
+
+		// GET: api/Addons/GetGreenBuildingCheckByGreenBuildingCheckId/1
+		[HttpGet("GetGreenBuildingCheckByGreenBuildingCheckId/{GreenBuildingCheckID}")]
+		public async Task<ActionResult<GreenBuildingCheck>> GetGreenBuildingCheckByGreenBuildingCheckId(int GreenBuildingCheckID)
+		{
+			var greenBuilding = await _context.GreenBuildingChecks.FirstOrDefaultAsync(d => d.GreenBuildingCheckId == GreenBuildingCheckID);
+
+			if (greenBuilding == null)
+			{
+				return NotFound();
+			}
+
+			return greenBuilding;
+		}
+
+		/// <summary>
+		/// Gets the list of all Green Bjuilding Check.
+		/// </summary>
+		/// <returns>The list of Green Bjuilding Check.</returns>
+		// GET: api/Addons/GetGreenBuildingCheckByListingId/1
+		[HttpGet("GetGreenBuildingCheckByListingId/{ListingID}")]
+		public async Task<ActionResult<GreenBuildingCheck>> GetGreenBuildingCheckByListingId(int ListingID)
+		{
+			var greenBuilding = await _context.GreenBuildingChecks.FirstOrDefaultAsync(d => d.ListingId == ListingID);
+
+			if (greenBuilding == null)
+			{
+				return NotFound();
+			}
+
+			return greenBuilding;
+		}
+
+		// PUT: api/Addons/UpdateGreenBuildingCheck/1
+		[HttpPut("UpdateGreenBuildingCheck/{GreenBuildingCheckID}")]
+		public async Task<IActionResult> UpdateGreenBuildingCheck(int GreenBuildingCheckID, [FromBody] GreenBuildingCheck greenBuildingCheck)
+		{
+			if (GreenBuildingCheckID != greenBuildingCheck.GreenBuildingCheckId || greenBuildingCheck == null)
+			{
+				return BadRequest();
+			}
+
+			_context.Entry(greenBuildingCheck).State = EntityState.Modified;
+
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				if (!GreenBuildingCheckExists(GreenBuildingCheckID))
+				{
+					return NotFound();
+				}
+				else
+				{
+					throw;
+				}
+			}
+
+			return CreatedAtAction("GetGreenBuildingCheckByGreenBuildingCheckId", new { GreenBuildingCheckId = greenBuildingCheck.GreenBuildingCheckId }, greenBuildingCheck);
+		}
+		private bool GreenBuildingCheckExists(int GreenBuildingCheckID)
+		{
+			return _context.GreenBuildingChecks.Any(e => e.GreenBuildingCheckId == GreenBuildingCheckID);
+		}
 	}
 }
