@@ -21,7 +21,7 @@ namespace HiSpaceListingService.Controllers
         {
             _context = context;
         }
-
+		 
 		/// <summary>
 		/// </summary>
 		/// <returns>The list of Properties by its location.</returns>
