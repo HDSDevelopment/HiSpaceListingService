@@ -266,5 +266,92 @@ namespace HiSpaceListingService.Controllers
 			//}
 			return propertyDetails;
 		}
+
+		[Route("GetAllPropertyList")]
+		[HttpGet]
+		public ActionResult<List<Listing>> GetAllPropertyList()
+		{
+			List<Listing> l = new List<Listing>();
+			l = (from r in _context.Listings
+				 select r).ToList();
+			if (l == null)
+			{
+				return NotFound();
+			}
+
+			return l;
+
+		}
+
+		[Route("GetAllOperatorList")]
+		[HttpGet]
+		public ActionResult<List<PropertyOperatorResponse>> GetAllOperatorList()
+		{
+			List<PropertyOperatorResponse> listoperators = new List<PropertyOperatorResponse>();
+
+			var users = (from u in _context.Users
+						 select u).ToList();
+			if (users == null)
+			{
+				return NotFound();
+			}
+
+			foreach (var item in users)
+			{
+				PropertyOperatorResponse op = new PropertyOperatorResponse();
+
+				op.Operator = new User();
+				op.Operator = item;
+
+				op.TotalCommercial = _context.Listings.Where(d => d.ListingType == "Commercial" && d.UserId == item.UserId).Count();
+				op.TotalCoWorking = _context.Listings.Where(d => d.ListingType == "Co-Working" && d.UserId == item.UserId).Count();
+				op.TotalREProfessional = _context.Listings.Where(d => d.ListingType == "RE-Professional" && d.UserId == item.UserId).Count();
+			
+				listoperators.Add(op);
+			}
+
+			return listoperators;
+
+		}
+
+		[Route("GetAllPeopleList")]
+		[HttpGet]
+		public ActionResult<List<PropertyPeopleResponse>> GetAllPeopleList()
+		{
+			List<PropertyPeopleResponse> ppl = new List<PropertyPeopleResponse>();
+			var users = (from r in _context.Listings
+						 join a in _context.Users on r.UserId equals a.UserId
+						 where r.ListingType == "RE-Professional"
+						 select new
+						 {
+							 a,
+							 r.ListingId
+						 }).ToList();
+			if (users == null)
+			{
+				return NotFound();
+			}
+
+			foreach (var item in users)
+			{
+				PropertyPeopleResponse p = new PropertyPeopleResponse();
+
+				p.Operator = new User();
+				p.Operator = item.a;
+				//p.Operator.UserId = item.a.UserId;
+				//p.Operator.UserType = item.a.UserType;
+				p.ListingId = item.ListingId;
+
+				p.Projects = (from r in _context.REProfessionalMasters
+							  where r.ListingId == item.ListingId
+							  select r).ToList();
+
+				p.TotalProjects = p.Projects.Count();
+				ppl.Add(p);
+			}
+
+			return ppl;
+
+		}
 	}
 }
