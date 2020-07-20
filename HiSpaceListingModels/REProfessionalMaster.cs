@@ -20,6 +20,10 @@ namespace HiSpaceListingModels
 		public int? ModifyBy { set; get; }
 		public DateTime? ModifyDateTime { set; get; }
 		public string DocumentUrl { set; get; }
+		public string PropertyReraId { set; get; }
+		public string PropertyAdditionalIdName { set; get; }
+		public string PropertyAdditionalIdNumber { set; get; }
+		public string ProjectRole { set; get; }
 
 	}
 }

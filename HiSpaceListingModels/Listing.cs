@@ -76,5 +76,16 @@ namespace HiSpaceListingModels
 		public bool RE_Retail { set; get; }
 		public bool RE_Coworking { set; get; }
 		public bool RE_PropertyManagement { set; get; }
+		public string CMCW_PropertyFor { set; get; }
+		public string CMCW_ReraId { set; get; }
+		public string CMCW_SurveyNumber { set; get; }
+		public string CMCW_PropertyTaxBillNumber { set; get; }
+		public string CMCW_CTSNumber { set; get; }
+		public string CMCW_MilkatNumber { set; get; }
+		public string CMCW_GatNumber { set; get; }
+		public string CMCW_PlotNumber { set; get; }
+		public string RE_FirstName { set; get; }
+		public string RE_LastName { set; get; }
+		public string RE_Roles { set; get; }
 	}
 }

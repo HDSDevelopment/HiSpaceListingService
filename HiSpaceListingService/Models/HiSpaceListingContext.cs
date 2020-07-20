@@ -24,5 +24,6 @@ namespace HiSpaceListingService.Models
 		public DbSet<FacilityMaster> FacilityMasters { get; set; }
 		public DbSet<GreenBuildingCheck> GreenBuildingChecks { get; set; }
 		public DbSet<HealthCheck> HealthChecks { get; set; }
+		public DbSet<RERoles> RERoless { get; set; }
 	}
 }

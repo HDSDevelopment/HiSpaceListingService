@@ -20,5 +20,6 @@ namespace HiSpaceListingService.ViewModel
 		public int AvailableHealthCheck { get; set; }
 		public int AvailableGreenBuildingCheck { get; set; }
 		public List<ListingImages> ListingImagesList {get; set;}
+
 	}
 }
