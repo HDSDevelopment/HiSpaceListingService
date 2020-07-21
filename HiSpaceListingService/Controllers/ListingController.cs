@@ -27,11 +27,40 @@ namespace HiSpaceListingService.Controllers
 		/// </summary>
 		/// <returns>The list of Listings.</returns>
 		// GET: api/Listing/GetListingsByUserId/1
+		//[HttpGet]
+		//[Route("GetListingsByUserId/{UserId}")]
+		//public async Task<ActionResult<IEnumerable<Listing>>> GetListingsByUserId(int UserId)
+		//{
+		//	return await _context.Listings.Where(d => d.UserId == UserId).ToListAsync();
+		//}
+
 		[HttpGet]
 		[Route("GetListingsByUserId/{UserId}")]
-		public async Task<ActionResult<IEnumerable<Listing>>> GetListingsByUserId(int UserId)
+		public async Task<ActionResult<IEnumerable<ListingTableResponse>>> GetListingsByUserId(int UserId)
 		{
-			return await _context.Listings.Where(d => d.UserId == UserId).ToListAsync();
+			List<ListingTableResponse> listingTable = new List<ListingTableResponse>();
+			var listings = await _context.Listings.Where(d => d.UserId == UserId).ToListAsync();
+
+			foreach (var item in listings)
+			{
+				ListingTableResponse lst = new ListingTableResponse();
+
+				lst.Listings = new Listing();
+				lst.Listings = item;
+
+				lst.GBC = _context.GreenBuildingChecks.SingleOrDefault(d => d.ListingId == item.ListingId);
+				lst.TotalHealthCheck = _context.HealthChecks.Where(d => d.ListingId == item.ListingId).Count();
+				lst.TotalGreenBuildingCheck = _context.GreenBuildingChecks.Where(d => d.ListingId == item.ListingId).Count();
+				lst.TotalWorkingHours = _context.WorkingHourss.Where(d => d.ListingId == item.ListingId).Count();
+				lst.TotalListingImages = _context.ListingImagess.Where(d => d.ListingId == item.ListingId).Count();
+				lst.TotalAmenities = _context.Amenitys.Where(d => d.ListingId == item.ListingId).Count();
+				lst.TotalFacilities = _context.Facilitys.Where(d => d.ListingId == item.ListingId).Count();
+				lst.TotalProjects = _context.REProfessionalMasters.Where(d => d.ListingId == item.ListingId).Count();
+
+				listingTable.Add(lst);
+			}
+
+			return listingTable;
 		}
 
 		/// <summary>
