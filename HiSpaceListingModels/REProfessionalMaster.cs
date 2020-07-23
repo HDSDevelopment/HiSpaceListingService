@@ -24,6 +24,7 @@ namespace HiSpaceListingModels
 		public string PropertyAdditionalIdName { set; get; }
 		public string PropertyAdditionalIdNumber { set; get; }
 		public string ProjectRole { set; get; }
+		public string OperatorName { set; get; }
 
 	}
 }
