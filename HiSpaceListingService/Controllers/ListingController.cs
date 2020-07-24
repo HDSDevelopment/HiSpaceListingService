@@ -27,13 +27,40 @@ namespace HiSpaceListingService.Controllers
 		/// </summary>
 		/// <returns>The list of Listings.</returns>
 		// GET: api/Listing/GetListingsByUserId/1
+		//[HttpGet]
+		//[Route("GetListingsByUserId/{UserId}")]
+		//public async Task<ActionResult<IEnumerable<Listing>>> GetListingsByUserId(int UserId)
+		//{
+		//	return await _context.Listings.Where(d => d.UserId == UserId).ToListAsync();
+		//}
 		[HttpGet]
 		[Route("GetListingsByUserId/{UserId}")]
-		public async Task<ActionResult<IEnumerable<Listing>>> GetListingsByUserId(int UserId)
+		public async Task<ActionResult<IEnumerable<ListingTableResponse>>> GetListingsByUserId(int UserId)
 		{
-			return await _context.Listings.Where(d => d.UserId == UserId).ToListAsync();
-		}
+			List<ListingTableResponse> listingTable = new List<ListingTableResponse>();
+			var listings = await _context.Listings.Where(d => d.UserId == UserId).ToListAsync();
 
+			foreach (var item in listings)
+			{
+				ListingTableResponse lst = new ListingTableResponse();
+
+				lst.Listings = new Listing();
+				lst.Listings = item;
+
+				lst.GBC = _context.GreenBuildingChecks.SingleOrDefault(d => d.ListingId == item.ListingId);
+				lst.TotalHealthCheck = _context.HealthChecks.Where(d => d.ListingId == item.ListingId).Count();
+				lst.TotalGreenBuildingCheck = _context.GreenBuildingChecks.Where(d => d.ListingId == item.ListingId).Count();
+				lst.TotalWorkingHours = _context.WorkingHourss.Where(d => d.ListingId == item.ListingId).Count();
+				lst.TotalListingImages = _context.ListingImagess.Where(d => d.ListingId == item.ListingId).Count();
+				lst.TotalAmenities = _context.Amenitys.Where(d => d.ListingId == item.ListingId).Count();
+				lst.TotalFacilities = _context.Facilitys.Where(d => d.ListingId == item.ListingId).Count();
+				lst.TotalProjects = _context.REProfessionalMasters.Where(d => d.ListingId == item.ListingId).Count();
+
+				listingTable.Add(lst);
+			}
+
+			return listingTable;
+		}
 		/// <summary>
 		/// Gets the list of all Listings.
 		/// </summary>
@@ -265,6 +292,118 @@ namespace HiSpaceListingService.Controllers
 
 			//}
 			return propertyDetails;
+		}
+
+		[Route("GetAllPropertyList")]
+		[HttpGet]
+		public ActionResult<List<Listing>> GetAllPropertyList()
+		{
+			List<Listing> l = new List<Listing>();
+			l = (from r in _context.Listings
+				 select r).ToList();
+			if (l == null)
+			{
+				return NotFound();
+			}
+
+			return l;
+
+		}
+
+		[Route("GetAllPropertyListCommercialAndCoworking")]
+		[HttpGet]
+		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetAllPropertyListCommercialAndCoworking()
+		{
+			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
+			var properties = await _context.Listings.Where(m => m.Status == true && m.ListingType == "Commercial" || m.ListingType == "Co-Working").OrderByDescending(d => d.CreatedDateTime).ToListAsync();
+
+			foreach (var item in properties)
+			{
+				PropertyDetailResponse property = new PropertyDetailResponse();
+				property.SpaceListing = item;
+				property.SpaceUser = _context.Users.SingleOrDefault(d => d.UserId == item.UserId);
+				property.AvailableAmenities = (from PA in _context.Amenitys where PA.ListingId == item.ListingId && PA.Status == true select new Amenity() { AmenityId = PA.AmenityId, Name = PA.Name }).ToList().Count();
+				property.AvailableFacilities = (from PF in _context.Facilitys where PF.ListingId == item.ListingId && PF.Status == true select new Facility() { FacilityId = PF.FacilityId, Name = PF.Name }).ToList().Count();
+				property.AvailableProjects = (from PF in _context.REProfessionalMasters where PF.ListingId == item.ListingId && PF.Status == true select new REProfessionalMaster() { REProfessionalMasterId = PF.REProfessionalMasterId, ProjectName = PF.ProjectName }).ToList().Count();
+				property.ListingImagesList = _context.ListingImagess.Where(d => d.ListingId == item.ListingId).ToList();
+				property.AvailableHealthCheck = (from AHC in _context.HealthChecks where AHC.ListingId == item.ListingId && AHC.Status == true select new HealthCheck() { HealthCheckId = AHC.HealthCheckId }).ToList().Count();
+
+				property.AvailableGreenBuildingCheck = (from GBC in _context.GreenBuildingChecks where GBC.ListingId == item.ListingId && GBC.Status == true select new GreenBuildingCheck() { GreenBuildingCheckId = GBC.GreenBuildingCheckId }).ToList().Count();
+				vModel.Add(property);
+			}
+
+			return vModel;
+		}
+
+		[Route("GetAllOperatorList")]
+		[HttpGet]
+		public ActionResult<List<PropertyOperatorResponse>> GetAllOperatorList()
+		{
+			List<PropertyOperatorResponse> listoperators = new List<PropertyOperatorResponse>();
+
+			var users = (from u in _context.Users
+						 where u.UserId != 0 select u).ToList();
+			if (users == null)
+			{
+				return NotFound();
+			}
+
+			foreach (var item in users)
+			{
+				PropertyOperatorResponse op = new PropertyOperatorResponse();
+
+				op.Operator = new User();
+				op.Operator = item;
+
+				op.TotalCommercial = _context.Listings.Where(d => d.ListingType == "Commercial" && d.UserId == item.UserId).Count();
+				op.TotalCoWorking = _context.Listings.Where(d => d.ListingType == "Co-Working" && d.UserId == item.UserId).Count();
+				op.TotalREProfessional = _context.Listings.Where(d => d.ListingType == "RE-Professional" && d.UserId == item.UserId).Count();
+
+				listoperators.Add(op);
+			}
+
+			return listoperators;
+
+		}
+
+		[Route("GetAllPeopleList")]
+		[HttpGet]
+		public ActionResult<List<PropertyPeopleResponse>> GetAllPeopleList()
+		{
+			List<PropertyPeopleResponse> ppl = new List<PropertyPeopleResponse>();
+			var users = (from r in _context.Listings
+						 join a in _context.Users on r.UserId equals a.UserId
+						 where r.ListingType == "RE-Professional"
+						 select new
+						 {
+							 a,
+							 r.ListingId
+						 }).ToList();
+			if (users == null)
+			{
+				return NotFound();
+			}
+
+			foreach (var item in users)
+			{
+				PropertyPeopleResponse p = new PropertyPeopleResponse();
+
+				p.Operator = new User();
+				p.Operator = item.a;
+				//p.Operator.UserId = item.a.UserId;
+				//p.Operator.UserType = item.a.UserType;
+				//p.ListingId = item.ListingId;
+				p.Listing = _context.Listings.SingleOrDefault(d => d.ListingId == item.ListingId);
+				p.Projects = (from r in _context.REProfessionalMasters
+							  where r.ListingId == item.ListingId
+							  select r).ToList();
+
+				p.TotalProjects = p.Projects.Count();
+				ppl.Add(p);
+			}
+
+			return ppl;
+
 		}
 	}
 }
