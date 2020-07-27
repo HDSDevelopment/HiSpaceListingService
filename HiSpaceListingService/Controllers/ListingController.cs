@@ -315,7 +315,7 @@ namespace HiSpaceListingService.Controllers
 		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetAllPropertyListCommercialAndCoworking()
 		{
 			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
-			var properties = await _context.Listings.Where(m => m.Status == true && m.ListingType == "Commercial" || m.ListingType == "Co-Working").OrderByDescending(d => d.CreatedDateTime).ToListAsync();
+			var properties = await _context.Listings.Where(m => m.Status == true && m.ListingType != "RE-Professional").OrderByDescending(d => d.CreatedDateTime).ToListAsync();
 
 			foreach (var item in properties)
 			{
@@ -342,7 +342,8 @@ namespace HiSpaceListingService.Controllers
 			List<PropertyOperatorResponse> listoperators = new List<PropertyOperatorResponse>();
 
 			var users = (from u in _context.Users
-						 where u.UserId != 0 select u).ToList();
+						 where u.UserId != 0 && u.UserStatus == "Completed"
+						 select u).ToList();
 			if (users == null)
 			{
 				return NotFound();

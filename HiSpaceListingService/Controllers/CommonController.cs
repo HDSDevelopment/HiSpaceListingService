@@ -30,6 +30,7 @@ namespace HiSpaceListingService.Controllers
 		{
 			List<PropertyLocationSearchResponse> response = new List<PropertyLocationSearchResponse>();
 			var locations = from r in _context.Listings
+							where r.ListingType != "RE-Professional"
 							group r by r.locality into g
 							select new
 							{
@@ -159,7 +160,48 @@ namespace HiSpaceListingService.Controllers
 				{
 					UserId = item.UserId,
 					CompanyName = item.CompanyName,
+					PropertyListerInUseCount = _context.Listings.Count(d => d.UserId == item.UserId && d.ListingType != "RE-Professional")
+				});
+			}
+			return response;
+		}
+
+		// GET: api/Common/GetAllOperatorSearch/
+		[HttpGet]
+		[Route("GetAllOperatorSearch")]
+		[HttpGet]
+		public async Task<ActionResult<IEnumerable<PropertyListerSearchResponse>>> GetAllOperatorSearch()
+		{
+			List<PropertyListerSearchResponse> response = new List<PropertyListerSearchResponse>();
+			var Listers = await _context.Users.OrderBy(d => d.UserId).ToListAsync();
+			foreach (var item in Listers)
+			{
+				response.Add(new PropertyListerSearchResponse()
+				{
+					UserId = item.UserId,
+					CompanyName = item.CompanyName,
 					PropertyListerInUseCount = _context.Listings.Count(d => d.UserId == item.UserId)
+				});
+			}
+			return response;
+		}
+
+		// GET: api/Common/GetAllPeopleSearch/
+		[HttpGet]
+		[Route("GetAllPeopleSearch")]
+		[HttpGet]
+		public async Task<ActionResult<IEnumerable<PeopleNameSearchResponse>>> GetAllPeopleSearch()
+		{
+			List<PeopleNameSearchResponse> response = new List<PeopleNameSearchResponse>();
+			var People = await _context.Listings.Where(d => d.ListingType == "RE-Professional").ToListAsync();
+			foreach (var item in People)
+			{
+				response.Add(new PeopleNameSearchResponse()
+				{
+					ListingId = item.ListingId,
+					RE_FirstName = item.RE_FirstName,
+					RE_LastName = item.RE_LastName,
+					ProjectCount = _context.REProfessionalMasters.Count(d => d.ListingId == item.ListingId)
 				});
 			}
 			return response;

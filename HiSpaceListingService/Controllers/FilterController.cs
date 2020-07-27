@@ -11,26 +11,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HiSpaceListingService.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class FilterController : ControllerBase
-    {
-        private readonly HiSpaceListingContext _context;
+	[Route("api/[controller]")]
+	[ApiController]
+	public class FilterController : ControllerBase
+	{
+		private readonly HiSpaceListingContext _context;
 
-        public FilterController(HiSpaceListingContext context)
-        {
-            _context = context;
-        }
-		 
+		public FilterController(HiSpaceListingContext context)
+		{
+			_context = context;
+		}
+
 		/// <summary>
 		/// </summary>
 		/// <returns>The list of Properties by its location.</returns>
 		// GET: api/Listing/GetListingByLocation
-		[HttpGet("GetListingByLocation/{Location}")]
-		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetListingByLocation(string Location)
+		[HttpGet("GetListingPropertyByLocation/{Location}")]
+		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetListingPropertyByLocation(string Location)
 		{
 			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
-			var properties = await _context.Listings.Where(m => m.Status == true && m.locality == Location).OrderByDescending(d => d.CreatedDateTime).ToListAsync();
+			var properties = await _context.Listings.Where(m => m.Status == true && m.locality == Location && m.ListingType != "RE-Professional").OrderByDescending(d => d.CreatedDateTime).ToListAsync();
 
 			foreach (var item in properties)
 			{
@@ -55,11 +55,11 @@ namespace HiSpaceListingService.Controllers
 		/// </summary>
 		/// <returns>The list of Properties by its type.</returns>
 		// GET: api/Listing/GetListingByType
-		[HttpGet("GetListingByType/{Type}")]
-		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetListingByType(string Type)
+		[HttpGet("GetListingPropertyByType/{Type}")]
+		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetListingPropertyByType(string Type)
 		{
 			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
-			var properties = await _context.Listings.Where(m => m.Status == true && m.ListingType == Type).OrderByDescending(d => d.CreatedDateTime).ToListAsync();
+			var properties = await _context.Listings.Where(m => m.Status == true && m.ListingType == Type && m.ListingType != "RE-Professional").OrderByDescending(d => d.CreatedDateTime).ToListAsync();
 
 			foreach (var item in properties)
 			{
@@ -84,11 +84,11 @@ namespace HiSpaceListingService.Controllers
 		/// </summary>
 		/// <returns>The list of Properties by its user.</returns>
 		// GET: api/Listing/GetListingByUser
-		[HttpGet("GetListingByUser/{User}")]
-		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetListingByUser(int User)
+		[HttpGet("GetListingPropertyByUser/{User}")]
+		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetListingPropertyByUser(int User)
 		{
 			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
-			var properties = await _context.Listings.Where(m => m.Status == true && m.UserId == User).OrderByDescending(d => d.CreatedDateTime).ToListAsync();
+			var properties = await _context.Listings.Where(m => m.Status == true && m.UserId == User && m.ListingType != "RE-Professional").OrderByDescending(d => d.CreatedDateTime).ToListAsync();
 
 			foreach (var item in properties)
 			{
@@ -135,6 +135,78 @@ namespace HiSpaceListingService.Controllers
 			}
 
 			return vModel;
+		}
+
+		[Route("GetOperatorByUserId/{User}")]
+		[HttpGet]
+		public ActionResult<List<PropertyOperatorResponse>> GetOperatorByUserId(int User)
+		{
+			List<PropertyOperatorResponse> listoperators = new List<PropertyOperatorResponse>();
+
+			var users = (from u in _context.Users
+						 where u.UserId == User
+						 select u).ToList();
+			if (users == null)
+			{
+				return NotFound();
+			}
+
+			foreach (var item in users)
+			{
+				PropertyOperatorResponse op = new PropertyOperatorResponse();
+
+				op.Operator = new User();
+				op.Operator = item;
+
+				op.TotalCommercial = _context.Listings.Where(d => d.ListingType == "Commercial" && d.UserId == item.UserId).Count();
+				op.TotalCoWorking = _context.Listings.Where(d => d.ListingType == "Co-Working" && d.UserId == item.UserId).Count();
+				op.TotalREProfessional = _context.Listings.Where(d => d.ListingType == "RE-Professional" && d.UserId == item.UserId).Count();
+
+				listoperators.Add(op);
+			}
+
+			return listoperators;
+
+		}
+
+		[Route("GetPeopleByListingId/{ListingId}")]
+		[HttpGet]
+		public ActionResult<List<PropertyPeopleResponse>> GetPeopleByListingId(int ListingId)
+		{
+			List<PropertyPeopleResponse> ppl = new List<PropertyPeopleResponse>();
+			var users = (from r in _context.Listings
+						 join a in _context.Users on r.UserId equals a.UserId
+						 where r.ListingId == ListingId
+						 select new
+						 {
+							 a,
+							 r.ListingId
+						 }).ToList();
+			if (users == null)
+			{
+				return NotFound();
+			}
+
+			foreach (var item in users)
+			{
+				PropertyPeopleResponse p = new PropertyPeopleResponse();
+
+				p.Operator = new User();
+				p.Operator = item.a;
+				//p.Operator.UserId = item.a.UserId;
+				//p.Operator.UserType = item.a.UserType;
+				//p.ListingId = item.ListingId;
+				p.Listing = _context.Listings.SingleOrDefault(d => d.ListingId == item.ListingId);
+				p.Projects = (from r in _context.REProfessionalMasters
+							  where r.ListingId == item.ListingId
+							  select r).ToList();
+
+				p.TotalProjects = p.Projects.Count();
+				ppl.Add(p);
+			}
+
+			return ppl;
+
 		}
 
 	}
