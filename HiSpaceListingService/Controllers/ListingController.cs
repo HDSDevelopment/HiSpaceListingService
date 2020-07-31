@@ -417,18 +417,9 @@ namespace HiSpaceListingService.Controllers
 								}).ToList();
 
 				op.LinkedREProf = new List<LinkedREPRofessionals>(); 
-				//int rowCount = 0;
 				foreach (var linked in linkedREProf)
                 {
-					//op.LinkedREProf.Add (new LinkedREPRofessionals());
-					LinkedREPRofessionals REProf = new LinkedREPRofessionals();
-					//op.LinkedREProf[rowCount].ListingId = linked.ListingId;
-					//op.LinkedREProf[rowCount].REProfessionalMasterId = linked.REProfessionalMasterId;
-					//op.LinkedREProf[rowCount].UserId = linked.UserId;
-					//op.LinkedREProf[rowCount].ProjectRole = linked.ProjectRole;
-					//op.LinkedREProf[rowCount].REFirstName = linked.RE_FirstName;
-					//op.LinkedREProf[rowCount].RELastName = linked.RE_LastName;
-					//rowCount++;
+					LinkedREPRofessionals REProf = new LinkedREPRofessionals();				
 
 					REProf.ListingId = linked.ListingId;
 					REProf.REProfessionalMasterId = linked.REProfessionalMasterId;
