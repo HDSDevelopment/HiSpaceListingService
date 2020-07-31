@@ -342,7 +342,49 @@ namespace HiSpaceListingService.Controllers
 				op.TotalCommercial = _context.Listings.Where(d => d.ListingType == "Commercial" && d.UserId == item.UserId).Count();
 				op.TotalCoWorking = _context.Listings.Where(d => d.ListingType == "Co-Working" && d.UserId == item.UserId).Count();
 				op.TotalREProfessional = _context.Listings.Where(d => d.ListingType == "RE-Professional" && d.UserId == item.UserId).Count();
-			
+				var linkedREProf = (from l in _context.Listings
+								  from r in _context.REProfessionalMasters
+								   where (l.UserId == item.UserId && 
+									(l.CMCW_ReraId == r.PropertyReraId 
+									|| l.CMCW_CTSNumber == r.PropertyAdditionalIdNumber
+									|| l.CMCW_GatNumber == r.PropertyAdditionalIdNumber
+									|| l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber
+									|| l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber
+									|| l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber
+									|| l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+								select new { 
+									r.ListingId, 
+									r.REProfessionalMasterId, 
+									l.UserId,
+									r.ProjectRole,
+									l.RE_FirstName,
+									l.RE_LastName
+								}).ToList();
+
+				op.LinkedREProf = new List<LinkedREPRofessionals>(); 
+				//int rowCount = 0;
+				foreach (var linked in linkedREProf)
+                {
+					//op.LinkedREProf.Add (new LinkedREPRofessionals());
+					LinkedREPRofessionals REProf = new LinkedREPRofessionals();
+					//op.LinkedREProf[rowCount].ListingId = linked.ListingId;
+					//op.LinkedREProf[rowCount].REProfessionalMasterId = linked.REProfessionalMasterId;
+					//op.LinkedREProf[rowCount].UserId = linked.UserId;
+					//op.LinkedREProf[rowCount].ProjectRole = linked.ProjectRole;
+					//op.LinkedREProf[rowCount].REFirstName = linked.RE_FirstName;
+					//op.LinkedREProf[rowCount].RELastName = linked.RE_LastName;
+					//rowCount++;
+
+					REProf.ListingId = linked.ListingId;
+					REProf.REProfessionalMasterId = linked.REProfessionalMasterId;
+					REProf.UserId = linked.UserId;
+					REProf.ProjectRole = linked.ProjectRole;
+					REProf.REFirstName = linked.RE_FirstName;
+					REProf.RELastName = linked.RE_LastName;
+					op.LinkedREProf.Add(REProf);					
+				}
+				
+				op.LinkedREProfCount = op.LinkedREProf.Count;
 				listoperators.Add(op);
 			}
 
