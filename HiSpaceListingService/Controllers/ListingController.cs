@@ -169,14 +169,69 @@ namespace HiSpaceListingService.Controllers
 		/// </summary>
 		/// <returns>The Listings list.</returns>
 		// POST: api/Listing/DeleteListing
+		//[HttpPost]
+		//[Route("DeleteListing/{ListingId}")]
+		//public async Task<ActionResult<IEnumerable<Listing>>> DeleteListing(int ListingId)
+		//{
+		//	var listing = await _context.Listings.FindAsync(ListingId);
+		//	_context.Listings.Remove(listing);
+		//	await _context.SaveChangesAsync();
+		//	return CreatedAtAction("GetUsers", listing);
+		//}
+
 		[HttpPost]
 		[Route("DeleteListing/{ListingId}")]
-		public async Task<ActionResult<IEnumerable<Listing>>> DeleteListing(int ListingId)
+		public async Task<ActionResult<Listing>> DeleteListing(int ListingId)
 		{
 			var listing = await _context.Listings.FindAsync(ListingId);
+			if (listing == null)
+			{
+				return NotFound();
+			}
 			_context.Listings.Remove(listing);
 			await _context.SaveChangesAsync();
-			return CreatedAtAction("GetUsers", listing);
+
+			var amenities = await _context.Amenitys.Where(m => m.ListingId == ListingId).ToListAsync();
+			foreach (var item in amenities)
+			{
+				_context.Amenitys.Remove(item);
+			}
+			await _context.SaveChangesAsync();
+
+			var facilities = await _context.Facilitys.Where(m => m.ListingId == ListingId).ToListAsync();
+			foreach (var item in facilities)
+			{
+				_context.Facilitys.Remove(item);
+			}
+			await _context.SaveChangesAsync();
+
+			var listingImages = await _context.ListingImagess.Where(m => m.ListingId == ListingId).ToListAsync();
+			foreach (var item in listingImages)
+			{
+				_context.ListingImagess.Remove(item);
+			}
+			await _context.SaveChangesAsync();
+
+			var workingHours = await _context.WorkingHourss.Where(m => m.ListingId == ListingId).FirstOrDefaultAsync();
+			_context.WorkingHourss.Remove(workingHours);
+			await _context.SaveChangesAsync();
+
+			var healthCheck = await _context.HealthChecks.Where(m => m.ListingId == ListingId).FirstOrDefaultAsync();
+			_context.HealthChecks.Remove(healthCheck);
+			await _context.SaveChangesAsync();
+
+			var greenBuildingCheck = await _context.GreenBuildingChecks.Where(m => m.ListingId == ListingId).FirstOrDefaultAsync();
+			_context.GreenBuildingChecks.Remove(greenBuildingCheck);
+			await _context.SaveChangesAsync();
+
+			var reProfessionalMaster = await _context.REProfessionalMasters.Where(m => m.ListingId == ListingId).ToListAsync();
+			foreach (var item in reProfessionalMaster)
+			{
+				_context.REProfessionalMasters.Remove(item);
+			}
+			await _context.SaveChangesAsync();
+
+			return listing;
 		}
 
 		// GET: api/Addons/GetWoringHoursByWoringHoursID/1
