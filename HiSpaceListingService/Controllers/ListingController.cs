@@ -167,14 +167,68 @@ namespace HiSpaceListingService.Controllers
 		/// </summary>
 		/// <returns>The Listings list.</returns>
 		// POST: api/Listing/DeleteListing
+		//[HttpPost]
+		//[Route("DeleteListing/{ListingId}")]
+		//public async Task<ActionResult<IEnumerable<Listing>>> DeleteListing(int ListingId)
+		//{
+		//	var listing = await _context.Listings.FindAsync(ListingId);
+		//	_context.Listings.Remove(listing);
+		//	await _context.SaveChangesAsync();
+		//	return CreatedAtAction("GetUsers", listing);
+		//}
 		[HttpPost]
 		[Route("DeleteListing/{ListingId}")]
-		public async Task<ActionResult<IEnumerable<Listing>>> DeleteListing(int ListingId)
+		public async Task<ActionResult<Listing>> DeleteListing(int ListingId)
 		{
 			var listing = await _context.Listings.FindAsync(ListingId);
+			if (listing == null)
+			{
+				return NotFound();
+			}
 			_context.Listings.Remove(listing);
 			await _context.SaveChangesAsync();
-			return CreatedAtAction("GetUsers", listing);
+
+			var amenities = await _context.Amenitys.Where(m => m.ListingId == ListingId).ToListAsync();
+			foreach (var item in amenities)
+			{
+				_context.Amenitys.Remove(item);
+			}
+			await _context.SaveChangesAsync();
+
+			var facilities = await _context.Facilitys.Where(m => m.ListingId == ListingId).ToListAsync();
+			foreach (var item in facilities)
+			{
+				_context.Facilitys.Remove(item);
+			}
+			await _context.SaveChangesAsync();
+
+			var listingImages = await _context.ListingImagess.Where(m => m.ListingId == ListingId).ToListAsync();
+			foreach (var item in listingImages)
+			{
+				_context.ListingImagess.Remove(item);
+			}
+			await _context.SaveChangesAsync();
+
+			var workingHours = await _context.WorkingHourss.Where(m => m.ListingId == ListingId).FirstOrDefaultAsync();
+			_context.WorkingHourss.Remove(workingHours);
+			await _context.SaveChangesAsync();
+
+			var healthCheck = await _context.HealthChecks.Where(m => m.ListingId == ListingId).FirstOrDefaultAsync();
+			_context.HealthChecks.Remove(healthCheck);
+			await _context.SaveChangesAsync();
+
+			var greenBuildingCheck = await _context.GreenBuildingChecks.Where(m => m.ListingId == ListingId).FirstOrDefaultAsync();
+			_context.GreenBuildingChecks.Remove(greenBuildingCheck);
+			await _context.SaveChangesAsync();
+
+			var reProfessionalMaster = await _context.REProfessionalMasters.Where(m => m.ListingId == ListingId).ToListAsync();
+			foreach (var item in reProfessionalMaster)
+			{
+				_context.REProfessionalMasters.Remove(item);
+			}
+			await _context.SaveChangesAsync();
+
+			return listing;
 		}
 
 		// GET: api/Addons/GetWoringHoursByWoringHoursID/1
@@ -257,6 +311,8 @@ namespace HiSpaceListingService.Controllers
 				property.AvailableHealthCheck = (from AHC in _context.HealthChecks where AHC.ListingId == item.ListingId && AHC.Status == true select new HealthCheck() { HealthCheckId = AHC.HealthCheckId }).ToList().Count();
 				property.AvailableGreenBuildingCheck = (from GBC in _context.GreenBuildingChecks where GBC.ListingId == item.ListingId && GBC.Status == true select new GreenBuildingCheck() { GreenBuildingCheckId = GBC.GreenBuildingCheckId }).ToList().Count();
 
+				// Adding additional detail
+				property.GreenBuildingCheckDetails = _context.GreenBuildingChecks.SingleOrDefault(d => d.ListingId == item.ListingId);
 				vModel.PropertyDetail.Add(property);
 			}
 			vModel.SpaceUser = _context.Users.SingleOrDefault(m => m.UserId == UserID);
@@ -287,6 +343,8 @@ namespace HiSpaceListingService.Controllers
 			propertyDetails.ListerPropertyCount = propertyCount.Count();
 			propertyDetails.HealthCheck = _context.HealthChecks.SingleOrDefault(d => d.ListingId == property.ListingId);
 			propertyDetails.GreenBuildingCheck = _context.GreenBuildingChecks.SingleOrDefault(d => d.ListingId == property.ListingId);
+			// Adding additional field
+			propertyDetails.ProjectCount = _context.REProfessionalMasters.Where(d => d.ListingId == property.ListingId).Count();
 			//foreach(var amenity in amenities)
 			//{
 
@@ -359,7 +417,41 @@ namespace HiSpaceListingService.Controllers
 				op.TotalCommercial = _context.Listings.Where(d => d.ListingType == "Commercial" && d.UserId == item.UserId).Count();
 				op.TotalCoWorking = _context.Listings.Where(d => d.ListingType == "Co-Working" && d.UserId == item.UserId).Count();
 				op.TotalREProfessional = _context.Listings.Where(d => d.ListingType == "RE-Professional" && d.UserId == item.UserId).Count();
+				var linkedREProf = (from l in _context.Listings
+									from r in _context.REProfessionalMasters
+									where (l.UserId == item.UserId &&
+									 (l.CMCW_ReraId == r.PropertyReraId
+									 || l.CMCW_CTSNumber == r.PropertyAdditionalIdNumber
+									 || l.CMCW_GatNumber == r.PropertyAdditionalIdNumber
+									 || l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber
+									 || l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber
+									 || l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber
+									 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+									select new
+									{
+										r.ListingId,
+										r.REProfessionalMasterId,
+										l.UserId,
+										r.ProjectRole,
+										l.RE_FirstName,
+										l.RE_LastName
+									}).ToList();
 
+				op.LinkedREProf = new List<LinkedREPRofessionals>();
+				foreach (var linked in linkedREProf)
+				{
+					LinkedREPRofessionals REProf = new LinkedREPRofessionals();
+
+					REProf.ListingId = linked.ListingId;
+					REProf.REProfessionalMasterId = linked.REProfessionalMasterId;
+					REProf.UserId = linked.UserId;
+					REProf.ProjectRole = linked.ProjectRole;
+					REProf.REFirstName = linked.RE_FirstName;
+					REProf.RELastName = linked.RE_LastName;
+					op.LinkedREProf.Add(REProf);
+				}
+
+				op.LinkedREProfCount = op.LinkedREProf.Count;
 				listoperators.Add(op);
 			}
 
@@ -405,6 +497,23 @@ namespace HiSpaceListingService.Controllers
 
 			return ppl;
 
+		}
+		[HttpGet("GetPeopleDetailByListingID/{ListingID}")]
+		public async Task<ActionResult<PeopleDetailResponse>> GetPeopleDetailByListingID(int ListingID)
+		{
+			PeopleDetailResponse peopleDetails = new PeopleDetailResponse();
+			var property = await _context.Listings.SingleOrDefaultAsync(m => m.ListingId == ListingID && m.ListingType == "RE-Professional");
+			if (property == null)
+			{
+				return NotFound();
+			}
+
+			peopleDetails.Listing = property;
+			peopleDetails.User = _context.Users.SingleOrDefault(d => d.UserId == property.UserId);
+			peopleDetails.REProfessionalMasters = _context.REProfessionalMasters.Where(d => d.ListingId == property.ListingId).ToList();
+			peopleDetails.ProjectCount = _context.REProfessionalMasters.Where(d => d.ListingId == property.ListingId).Count();
+
+			return peopleDetails;
 		}
 	}
 }

@@ -11,11 +11,14 @@ namespace HiSpaceListingService.ViewModel
         public PropertyOperatorResponse()
         {
             Operator = new User();
+            LinkedREProf = new List<LinkedREPRofessionals>();
         }
 
         public User Operator { get; set; }
         public int TotalCommercial { get; set; }
         public int TotalCoWorking { get; set; }
         public int TotalREProfessional { get; set; }
+        public List<LinkedREPRofessionals> LinkedREProf { get; set; }
+        public int LinkedREProfCount { get; set; }
     }
 }

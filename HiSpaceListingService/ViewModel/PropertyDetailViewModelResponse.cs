@@ -30,5 +30,6 @@ namespace HiSpaceListingService.ViewModel
 		public HealthCheck HealthCheck { set; get; }
 		public GreenBuildingCheck GreenBuildingCheck { set; get; }
 		public int ListerPropertyCount { set; get; }
+		public int ProjectCount { set; get; }
 	}
 }
