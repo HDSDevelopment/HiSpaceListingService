@@ -100,6 +100,18 @@ namespace HiSpaceListingService.Controllers
 		/// </summary>
 		/// <returns>The Listing by ListingId.</returns>
 		// POST: api/Listing/AddListing
+		//[HttpPost]
+		//[Route("AddListing")]
+		//public async Task<ActionResult<Listing>> AddListing([FromBody] Listing listing)
+		//{
+		//	//listing.CreatedDateTime = DateTime.Now;
+
+		//	_context.Listings.Add(listing);
+		//	await _context.SaveChangesAsync();
+
+		//	return CreatedAtAction("GetListingByListingId", new { ListingId = listing.ListingId }, listing);
+		//}
+
 		[HttpPost]
 		[Route("AddListing")]
 		public async Task<ActionResult<Listing>> AddListing([FromBody] Listing listing)
@@ -108,6 +120,16 @@ namespace HiSpaceListingService.Controllers
 
 			_context.Listings.Add(listing);
 			await _context.SaveChangesAsync();
+
+			if ((listing.ListingType == "Commercial") || (listing.ListingType == "Co-Working") && (_context.Listings.Any(e => e.UserId == listing.UserId && e.ListingType == "RE-Professional") == false))
+			{
+				Listing autoEntry = new Listing();
+				autoEntry.ListingType = "RE-Professional";
+				autoEntry.UserId = listing.UserId;
+
+				_context.Listings.Add(autoEntry);
+				await _context.SaveChangesAsync();
+			}
 
 			return CreatedAtAction("GetListingByListingId", new { ListingId = listing.ListingId }, listing);
 		}
