@@ -8,11 +8,14 @@ namespace HiSpaceListingModels
 {
     public class LinkedREPRofessionals
     {
-        public int ListingId { set; get; }
+        public int Property_ListingId { set; get; }
+        public int ReProfessional_ListingId { set; get; }
         public int REProfessionalMasterId { set; get; }
         public int UserId { set; get; }
         public string ProjectRole { set; get; }
+        public string ProjectName { set; get; }
         public string REFirstName { set; get; }
         public string RELastName { set; get; }
+        public string ImageUrl { set; get; }
     }
 }

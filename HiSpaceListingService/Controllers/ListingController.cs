@@ -417,10 +417,31 @@ namespace HiSpaceListingService.Controllers
 				op.TotalCommercial = _context.Listings.Where(d => d.ListingType == "Commercial" && d.UserId == item.UserId).Count();
 				op.TotalCoWorking = _context.Listings.Where(d => d.ListingType == "Co-Working" && d.UserId == item.UserId).Count();
 				op.TotalREProfessional = _context.Listings.Where(d => d.ListingType == "RE-Professional" && d.UserId == item.UserId).Count();
+				//geting roles
+				var GetListingIdByUsingUser = (from l in _context.Listings
+									where (l.UserId == item.UserId && l.Status == true && l.ListingType == "RE-Professional")
+									select new
+									{
+										l.ListingId
+									}).ToList();
+				if (GetListingIdByUsingUser != null)
+				{
+					op.roles = new List<string>();
+					foreach (var id in GetListingIdByUsingUser)
+					{
+						op.roles = _context.REProfessionalMasters.Where(d => d.ListingId == id.ListingId).Select(d => d.ProjectRole).Distinct().ToList();
+					}
+				}
+				else
+				{
+					op.roles = null;
+				}
+				//geting linked re-prof
 				var linkedREProf = (from l in _context.Listings
 									from r in _context.REProfessionalMasters
-									where (l.UserId == item.UserId &&
-									 (l.CMCW_ReraId == r.PropertyReraId
+									where (l.UserId == item.UserId && 
+									(l.ListingType == "Commercial" || l.ListingType == "Co-Working") && 
+									(l.CMCW_ReraId == r.PropertyReraId
 									 || l.CMCW_CTSNumber == r.PropertyAdditionalIdNumber
 									 || l.CMCW_GatNumber == r.PropertyAdditionalIdNumber
 									 || l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber
@@ -429,25 +450,28 @@ namespace HiSpaceListingService.Controllers
 									 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
 									select new
 									{
-										r.ListingId,
+										l.ListingId,
 										r.REProfessionalMasterId,
 										l.UserId,
 										r.ProjectRole,
-										l.RE_FirstName,
-										l.RE_LastName
+										r.ProjectName,
+										r.ImageUrl
 									}).ToList();
 
 				op.LinkedREProf = new List<LinkedREPRofessionals>();
 				foreach (var linked in linkedREProf)
 				{
 					LinkedREPRofessionals REProf = new LinkedREPRofessionals();
-
-					REProf.ListingId = linked.ListingId;
+					var GetListingIdOnReProfessional = _context.REProfessionalMasters.Where(d => d.REProfessionalMasterId == linked.REProfessionalMasterId).Select(d => d.ListingId).First();
+					REProf.Property_ListingId = linked.ListingId;
+					REProf.ReProfessional_ListingId = GetListingIdOnReProfessional;
 					REProf.REProfessionalMasterId = linked.REProfessionalMasterId;
 					REProf.UserId = linked.UserId;
 					REProf.ProjectRole = linked.ProjectRole;
-					REProf.REFirstName = linked.RE_FirstName;
-					REProf.RELastName = linked.RE_LastName;
+					REProf.ProjectName = linked.ProjectName;
+					REProf.ImageUrl = linked.ImageUrl;
+					REProf.REFirstName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_FirstName).First();
+					REProf.RELastName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_LastName).First();
 					op.LinkedREProf.Add(REProf);
 				}
 
