@@ -213,12 +213,12 @@ namespace HiSpaceListingService.Controllers
 			return _context.Users.Any(e => e.Email == Email);
 		}
 
-		[HttpGet]
-		[Route("UserEmailExists/{Email}")]
-		public bool UserEmailExists(string Email)
-		{
-			return _context.Users.Any(e => e.Email == Email);
-		}
+		//[HttpGet]
+		//[Route("UserEmailExists/{Email}")]
+		//public bool UserEmailExists(string Email)
+		//{
+		//	return _context.Users.Any(e => e.Email == Email);
+		//}
 
 	}
 }
