@@ -86,6 +86,6 @@ namespace HiSpaceListingModels
 		public string CMCW_PlotNumber { set; get; }
 		public string RE_FirstName { set; get; }
 		public string RE_LastName { set; get; }
-		//public string RE_Roles { set; get; }
+		public decimal? CMCW_AproximatePrice { set; get; }
 	}
 }

@@ -11,3 +11,4 @@ namespace HiSpaceListingService.ViewModel
 		public double PropertyTypeInUseCount { set; get; }
 	}
 }
+ 

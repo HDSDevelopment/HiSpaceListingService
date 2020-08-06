@@ -30,7 +30,7 @@ namespace HiSpaceListingService.Controllers
 		[Route("AuthenticateUser")]
 		public async Task<ActionResult<User>> AuthenticateUser([FromBody] User user)
 		{
-			var _user = await _context.Users.FirstOrDefaultAsync(d => d.Email == user.Email && d.Password == user.Password && d.Status == true);
+			var _user = await _context.Users.FirstOrDefaultAsync(d => d.Email == user.Email && d.Password == user.Password && d.Status == true && d.UserType == user.UserType);
 
 			if (_user == null)
 			{
@@ -205,6 +205,12 @@ namespace HiSpaceListingService.Controllers
 				result = false;
 			}
 			return result;
+		}
+		[HttpGet]
+		[Route("UserEmailExists/{Email}")]
+		public bool UserEmailExists(string Email)
+		{
+			return _context.Users.Any(e => e.Email == Email);
 		}
 
 		[HttpGet]

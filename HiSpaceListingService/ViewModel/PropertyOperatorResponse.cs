@@ -12,6 +12,7 @@ namespace HiSpaceListingService.ViewModel
         {
             Operator = new User();
             LinkedREProf = new List<LinkedREPRofessionals>();
+            roles = new List<string>();
         }
 
         public User Operator { get; set; }
@@ -20,5 +21,6 @@ namespace HiSpaceListingService.ViewModel
         public int TotalREProfessional { get; set; }
         public List<LinkedREPRofessionals> LinkedREProf { get; set; }
         public int LinkedREProfCount { get; set; }
+        public List<string> roles { get; set; }
     }
 }
