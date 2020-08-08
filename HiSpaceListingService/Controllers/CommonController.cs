@@ -51,6 +51,85 @@ namespace HiSpaceListingService.Controllers
 			return response;
 		}
 
+		// GET: api/Common/GetAllPropertySearchByUserID/UserId
+		//[HttpGet]
+		[Route("GetAllPropertySearchByUserID/{UserID}")]
+		[HttpGet]
+		public ActionResult<List<PropertyAndPeopleDetailWithLinkedSearchResponse>> GetAllPropertySearchByUserID(int UserID)
+		{
+			List<PropertyAndPeopleDetailWithLinkedSearchResponse> response = new List<PropertyAndPeopleDetailWithLinkedSearchResponse>();
+			var properties = from r in _context.Listings
+							 where r.UserId == UserID
+							 select new { r };
+			foreach (var item in properties)
+			{
+				if (item.r != null)
+				{
+					response.Add(new PropertyAndPeopleDetailWithLinkedSearchResponse()
+					{
+						ListingId = item.r.ListingId,
+						Name = item.r.Name,
+						RE_FirstName = item.r.RE_FirstName,
+						RE_LastName = item.r.RE_LastName,
+						ListingType = item.r.ListingType
+					});
+				}
+			}
+			return response;
+		}
+
+		// GET: api/Common/GetAllReProfessionalSearchByUserID/UserId
+		//[HttpGet]
+		[Route("GetAllReProfessionalSearchByUserID/{UserID}")]
+		[HttpGet]
+		public ActionResult<List<LinkedREPRofessionals>> GetAllReProfessionalSearchByUserID(int UserID)
+		{
+			//geting linked re-prof
+			var linkedREProf = (from l in _context.Listings
+								from r in _context.REProfessionalMasters
+								where (l.UserId == UserID &&
+								(l.ListingType == "Commercial" || l.ListingType == "Co-Working") &&
+								(l.CMCW_ReraId == r.PropertyReraId
+								 || l.CMCW_CTSNumber == r.PropertyAdditionalIdNumber
+								 || l.CMCW_GatNumber == r.PropertyAdditionalIdNumber
+								 || l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber
+								 || l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber
+								 || l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber
+								 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+								select new
+								{
+									l.ListingId,
+									r.REProfessionalMasterId,
+									l.UserId,
+									r.ProjectRole,
+									r.ProjectName,
+									r.ImageUrl
+								}).ToList();
+
+			List<LinkedREPRofessionals> response = new List<LinkedREPRofessionals>();
+			foreach (var item in linkedREProf)
+			{
+				if(item != null)
+				{
+					var GetListingIdOnReProfessional = _context.REProfessionalMasters.Where(d => d.REProfessionalMasterId == item.REProfessionalMasterId).Select(d => d.ListingId).First();
+					response.Add(new LinkedREPRofessionals()
+					{
+					Property_ListingId = item.ListingId,
+					ReProfessional_ListingId = GetListingIdOnReProfessional,
+					REProfessionalMasterId = item.REProfessionalMasterId,
+					UserId = item.UserId,
+					ProjectRole = item.ProjectRole,
+					ProjectName = item.ProjectName,
+					ImageUrl = item.ImageUrl,
+					REFirstName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_FirstName).First(),
+					RELastName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_LastName).First()
+					});	
+				}
+				
+			}
+			return response;
+		}
+
 		// GET: api/Common/GetAllPropertyTypeSearch/
 		[HttpGet]
 		[Route("GetAllPropertyTypeSearch")]

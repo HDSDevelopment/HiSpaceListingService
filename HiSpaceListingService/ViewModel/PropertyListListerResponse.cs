@@ -11,10 +11,13 @@ namespace HiSpaceListingService.ViewModel
 		public PropertyListListerResponse()
 		{
 			PropertyDetail = new List<PropertyDetailResponse>();
+			LinkedREPRofessionals = new List<LinkedREPRofessionals>();
 			SpaceUser = new User();
 		}
 		public List<PropertyDetailResponse> PropertyDetail { set; get; }
 		public User SpaceUser { get; set; }
 		public int PropertyCount { get; set; }
+		public List<LinkedREPRofessionals> LinkedREPRofessionals { set; get; }
+		public int LinkedREProfCount { set; get; }
 	}
 }
