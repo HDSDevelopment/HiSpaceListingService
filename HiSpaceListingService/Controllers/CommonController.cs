@@ -252,7 +252,7 @@ namespace HiSpaceListingService.Controllers
 		public async Task<ActionResult<IEnumerable<PropertyListerSearchResponse>>> GetAllOperatorSearch()
 		{
 			List<PropertyListerSearchResponse> response = new List<PropertyListerSearchResponse>();
-			var Listers = await _context.Users.OrderBy(d => d.UserId).ToListAsync();
+			var Listers = await _context.Users.Where(d => d.UserStatus == "Completed").OrderBy(d => d.UserId).ToListAsync();
 			foreach (var item in Listers)
 			{
 				response.Add(new PropertyListerSearchResponse()

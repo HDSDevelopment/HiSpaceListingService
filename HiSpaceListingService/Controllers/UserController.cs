@@ -166,6 +166,7 @@ namespace HiSpaceListingService.Controllers
 			return _context.Users.Any(e => e.UserId == UserId);
 		}
 
+
 		/// <summary>
 		/// Delete the User by UserId.
 		/// </summary>

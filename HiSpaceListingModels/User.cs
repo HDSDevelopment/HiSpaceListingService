@@ -22,12 +22,6 @@ namespace HiSpaceListingModels
 
 		public string Doc_CompanyLogo { set; get; }
 
-		public string GSTIN { set; get; }
-
-		public string PAN { set; get; }
-
-		public string UAN { set; get; }
-
 		public string Address { set; get; }
 
 		public string City { set; get; }
@@ -42,11 +36,6 @@ namespace HiSpaceListingModels
 
 		public string Doc_RCCopy { set; get; }
 
-		public string Doc_PANCopy { set; get; }
-
-		public string PrimaryContactName { set; get; }
-
-		public string PrimaryContactPhone { set; get; }
 
 		public int? UserType { set; get; }
 
@@ -63,5 +52,7 @@ namespace HiSpaceListingModels
 		public DateTime? ModidyDateTime { get; set; }
 		public string UserStatus { get; set; }
 		public bool TermsAndConditions { get; set; }
+		public string ProofName { get; set; }
+		public string ProofNumber { get; set; }
 	}
 }
