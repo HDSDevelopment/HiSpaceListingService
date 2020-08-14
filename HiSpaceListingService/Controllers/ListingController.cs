@@ -384,7 +384,7 @@ namespace HiSpaceListingService.Controllers
 								 || l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber
 								 || l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber
 								 || l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber
-								 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+								 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber) && (r.LinkingStatus == "Approved"))
 								select new
 								{
 									l.ListingId,
@@ -392,7 +392,9 @@ namespace HiSpaceListingService.Controllers
 									l.UserId,
 									r.ProjectRole,
 									r.ProjectName,
-									r.ImageUrl
+									r.OperatorName,
+									r.ImageUrl,
+									r.LinkingStatus
 								}).ToList();
 
 			vModel.LinkedREPRofessionals = new List<LinkedREPRofessionals>();
@@ -406,6 +408,8 @@ namespace HiSpaceListingService.Controllers
 				REProf.UserId = linked.UserId;
 				REProf.ProjectRole = linked.ProjectRole;
 				REProf.ProjectName = linked.ProjectName;
+				REProf.OperatorName = linked.OperatorName;
+				REProf.LinkingStatus = linked.LinkingStatus;
 				REProf.ImageUrl = linked.ImageUrl;
 				REProf.REFirstName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_FirstName).First();
 				REProf.RELastName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_LastName).First();
@@ -414,6 +418,61 @@ namespace HiSpaceListingService.Controllers
 
 			vModel.LinkedREProfCount = vModel.LinkedREPRofessionals.Count;
 
+			return vModel;
+		}
+
+		// GET: api/Listing/GetLinkedReProfessionalListByUserIDForApproval
+		[Route("GetLinkedReProfessionalListByUserIDForApproval/{UserID}")]
+		[HttpGet]
+		public async Task<ActionResult<List<LinkedREPRofessionals>>> GetLinkedReProfessionalListByUserIDForApproval(int UserID)
+		{
+			List<LinkedREPRofessionals> vModel = new List<LinkedREPRofessionals>();
+			var properties = await _context.Listings.Where(m => m.Status == true && m.UserId == UserID).OrderByDescending(d => d.CreatedDateTime).ToListAsync();
+
+			//geting linked re-prof
+			var linkedREProf = (from l in _context.Listings
+								from r in _context.REProfessionalMasters
+								where (l.UserId == UserID &&
+								(l.ListingType == "Commercial" || l.ListingType == "Co-Working") &&
+								(l.CMCW_ReraId == r.PropertyReraId
+								 || l.CMCW_CTSNumber == r.PropertyAdditionalIdNumber
+								 || l.CMCW_GatNumber == r.PropertyAdditionalIdNumber
+								 || l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber
+								 || l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber
+								 || l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber
+								 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+								select new
+								{
+									l.ListingId,
+									r.REProfessionalMasterId,
+									l.UserId,
+									r.ProjectRole,
+									r.ProjectName,
+									r.OperatorName,
+									r.ImageUrl,
+									r.LinkingStatus
+								}).ToList();
+			foreach (var linked in linkedREProf)
+			{
+				LinkedREPRofessionals REProf = new LinkedREPRofessionals();
+				var GetListingIdOnReProfessional = _context.REProfessionalMasters.Where(d => d.REProfessionalMasterId == linked.REProfessionalMasterId).Select(d => d.ListingId).First();
+				REProf.Property_ListingId = linked.ListingId;
+				REProf.ReProfessional_ListingId = GetListingIdOnReProfessional;
+				var GetREListing_UserId = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.UserId).First();
+				REProf.REProfessionalMasterId = linked.REProfessionalMasterId;
+				REProf.UserId = linked.UserId;
+				REProf.ProjectRole = linked.ProjectRole;
+				REProf.ProjectName = linked.ProjectName;
+				REProf.OperatorName = linked.OperatorName;
+				REProf.LinkingStatus = linked.LinkingStatus;
+				REProf.ImageUrl = linked.ImageUrl;
+				REProf.RE_UserName = _context.Users.Where(d => d.UserId == GetREListing_UserId).Select(d => d.CompanyName).First();
+				REProf.RE_Address = _context.Users.Where(d => d.UserId == GetREListing_UserId).Select(d => d.Address).First();
+				//REProf. = linked.ImageUrl;
+				REProf.REFirstName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_FirstName).First();
+				REProf.RELastName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_LastName).First();
+				vModel.Add(REProf);
+			}
 			return vModel;
 		}
 
@@ -455,7 +514,7 @@ namespace HiSpaceListingService.Controllers
 								 || l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber
 								 || l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber
 								 || l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber
-								 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+								 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber) && (r.LinkingStatus == "Approved"))
 								select new
 								{
 									l.ListingId,
@@ -463,7 +522,9 @@ namespace HiSpaceListingService.Controllers
 									l.UserId,
 									r.ProjectRole,
 									r.ProjectName,
-									r.ImageUrl
+									r.ImageUrl,
+									r.OperatorName,
+									r.LinkingStatus
 								}).ToList();
 
 			vModel.LinkedREPRofessionals = new List<LinkedREPRofessionals>();
@@ -476,6 +537,8 @@ namespace HiSpaceListingService.Controllers
 				REProf.REProfessionalMasterId = linked.REProfessionalMasterId;
 				REProf.UserId = linked.UserId;
 				REProf.ProjectRole = linked.ProjectRole;
+				REProf.OperatorName = linked.ProjectRole;
+				REProf.LinkingStatus = linked.LinkingStatus;
 				REProf.ProjectName = linked.ProjectName;
 				REProf.ImageUrl = linked.ImageUrl;
 				REProf.REFirstName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_FirstName).First();
@@ -614,7 +677,7 @@ namespace HiSpaceListingService.Controllers
 									 || l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber
 									 || l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber
 									 || l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber
-									 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+									 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber) && (r.LinkingStatus == "Approved"))
 									select new
 									{
 										l.ListingId,
@@ -622,7 +685,9 @@ namespace HiSpaceListingService.Controllers
 										l.UserId,
 										r.ProjectRole,
 										r.ProjectName,
-										r.ImageUrl
+										r.ImageUrl,
+										r.OperatorName,
+										r.LinkingStatus
 									}).ToList();
 
 				op.LinkedREProf = new List<LinkedREPRofessionals>();
@@ -635,6 +700,8 @@ namespace HiSpaceListingService.Controllers
 					REProf.REProfessionalMasterId = linked.REProfessionalMasterId;
 					REProf.UserId = linked.UserId;
 					REProf.ProjectRole = linked.ProjectRole;
+					REProf.OperatorName = linked.OperatorName;
+					REProf.LinkingStatus = linked.LinkingStatus;
 					REProf.ProjectName = linked.ProjectName;
 					REProf.ImageUrl = linked.ImageUrl;
 					REProf.REFirstName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_FirstName).First();
@@ -694,7 +761,7 @@ namespace HiSpaceListingService.Controllers
 									 || l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber
 									 || l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber
 									 || l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber
-									 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber) && r.ListingId == p.Listing.ListingId)
+									 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber) && (r.LinkingStatus == "Approved") && (r.ListingId == p.Listing.ListingId))
 									select new
 									{
 										l.ListingId,
@@ -702,7 +769,9 @@ namespace HiSpaceListingService.Controllers
 										l.UserId,
 										r.ProjectRole,
 										r.ProjectName,
-										r.ImageUrl
+										r.ImageUrl,
+										r.OperatorName,
+										r.LinkingStatus
 									}).ToList();
 				p.LinkedOpr = new List<LinkedOperators>();
 				foreach (var linked in linkedOperator)

@@ -17,5 +17,9 @@ namespace HiSpaceListingModels
         public string REFirstName { set; get; }
         public string RELastName { set; get; }
         public string ImageUrl { set; get; }
+        public string OperatorName { set; get; }
+        public string LinkingStatus { set; get; }
+        public string RE_UserName { set; get; }
+        public string RE_Address { set; get; }
     }
 }

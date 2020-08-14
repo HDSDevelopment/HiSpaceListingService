@@ -7,6 +7,7 @@ using HiSpaceListingService.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using HiSpaceListingService.Utilities;
 
 namespace HiSpaceListingService.Controllers
 {
@@ -207,12 +208,67 @@ namespace HiSpaceListingService.Controllers
 			}
 			return result;
 		}
+
+		//GET: api/user/ApproveByReMasterId/1/completed
+		[HttpGet("ApproveByReMasterId/{REProfessionalMasterId}/{Status}")]
+		public ActionResult<bool> ApproveByReMasterId(int REProfessionalMasterId, string Status)
+		{
+			bool result = true;
+			try
+			{
+				var rEProfessionalMaster = _context.REProfessionalMasters.SingleOrDefault(d => d.REProfessionalMasterId == REProfessionalMasterId);
+				if (rEProfessionalMaster != null)
+				{
+					rEProfessionalMaster.LinkingStatus = Status;
+					_context.Entry(rEProfessionalMaster).State = EntityState.Modified;
+					_context.SaveChangesAsync();
+				}
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				result = false;
+			}
+			return result;
+		}
+
+
 		[HttpGet]
 		[Route("UserEmailExists/{Email}")]
 		public bool UserEmailExists(string Email)
 		{
 			return _context.Users.Any(e => e.Email == Email);
 		}
+
+		//Enquiry
+		[HttpPost]
+		[Route("SendEnquiryEmail")]
+		public bool SendEnquiryEmail([FromBody] Enquiry Enquiry)
+		{
+			var Subject = "New Enquiry";
+			EmailMessage email = new EmailMessage();
+			return email.SendEnquiry(Enquiry.To_Email, Subject, Enquiry.Sender_Message, Enquiry.Sender_Phone, Enquiry.Sender_Name, Enquiry.Sender_Email);
+		}
+
+		//SendSignupSuccess
+		[HttpGet]
+		[Route("SendSignupSuccess/{Email}/{UserName}/{Password}")]
+		public bool SendSignupSuccess(string Email, string UserName, string Password)
+		{
+			var Subject = "Hi " + UserName + " Welcome To HiSpace";
+			EmailMessage email = new EmailMessage();
+			return email.SendSignup(Email, Subject, UserName, Password);
+		}
+
+		//BackgroundCheckEmail
+		[HttpGet]
+		[Route("SendBackgroundCheckEmail/{Email}/{UserName}")]
+		public bool SendBackgroundCheckEmail(string Email, string UserName)
+		{
+			var Subject = "Hi " + UserName + " Welcome To HiSpace";
+			EmailMessage email = new EmailMessage();
+			return email.BackgroundCheckEmail(Email, UserName, Subject);
+		}
+
 
 	}
 }
