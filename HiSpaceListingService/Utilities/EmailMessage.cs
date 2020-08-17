@@ -13,10 +13,8 @@ namespace HiSpaceListingService.Utilities
         bool EnableSsl = true;
         bool UseDefaultCredentials = false;
         int Port = 587;
-        //string email = "kanu.priya@highbrowdiligence.com";
-        //string password = "hds@12345";
-        string email = "tamilarasan@highbrowdiligence.com";
-        string password = "HDStamil@72";
+        string email = "kanu.priya@highbrowdiligence.com";
+        string password = "hds@12345";
 
         //enquiry
         public bool SendEnquiry(string ToEmail, string Subject, string Message, string Phone, string Name, string Email)
