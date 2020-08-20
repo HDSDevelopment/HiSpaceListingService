@@ -239,14 +239,34 @@ namespace HiSpaceListingService.Controllers
 			return _context.Users.Any(e => e.Email == Email);
 		}
 
+		////Enquiry
+		//[HttpPost]
+		//[Route("SendEnquiryEmail")]
+		//public bool SendEnquiryEmail([FromBody] Enquiry Enquiry)
+		//{
+		//	var Subject = "New Enquiry";
+		//	EmailMessage email = new EmailMessage();
+		//	return email.SendEnquiry(Enquiry.To_Email, Subject, Enquiry.Sender_Message, Enquiry.Sender_Phone, Enquiry.Sender_Name, Enquiry.Sender_Email);
+		//}
+
 		//Enquiry
 		[HttpPost]
 		[Route("SendEnquiryEmail")]
-		public bool SendEnquiryEmail([FromBody] Enquiry Enquiry)
+		public async Task<bool> SendEnquiryEmail([FromBody] Enquiry Enquiry)
 		{
 			var Subject = "New Enquiry";
 			EmailMessage email = new EmailMessage();
-			return email.SendEnquiry(Enquiry.To_Email, Subject, Enquiry.Sender_Message, Enquiry.Sender_Phone, Enquiry.Sender_Name, Enquiry.Sender_Email);
+
+			_context.Enquiries.Add(Enquiry);
+			await _context.SaveChangesAsync();
+
+			bool EnquiryEmail = email.SendEnquiry(Enquiry.To_Email, Subject, Enquiry.Sender_Message, Enquiry.Sender_Phone, Enquiry.Sender_Name, Enquiry.Sender_Email);
+
+			if (!EnquiryEmail)
+				return false;
+
+			return email.SendEnquirySuccessEmail(Enquiry.Sender_Email, Enquiry.Sender_Name);
+
 		}
 
 		//SendSignupSuccess
@@ -254,7 +274,7 @@ namespace HiSpaceListingService.Controllers
 		[Route("SendSignupSuccess/{Email}/{UserName}/{Password}")]
 		public bool SendSignupSuccess(string Email, string UserName, string Password)
 		{
-			var Subject = "Hi " + UserName + " Welcome To HiSpace";
+			var Subject = "Welcome To HiSpace";
 			EmailMessage email = new EmailMessage();
 			return email.SendSignup(Email, Subject, UserName, Password);
 		}
@@ -264,7 +284,7 @@ namespace HiSpaceListingService.Controllers
 		[Route("SendBackgroundCheckEmail/{Email}/{UserName}")]
 		public bool SendBackgroundCheckEmail(string Email, string UserName)
 		{
-			var Subject = "Hi " + UserName + " Welcome To HiSpace";
+			var Subject = "HiSapce Verification Confirmation";
 			EmailMessage email = new EmailMessage();
 			return email.BackgroundCheckEmail(Email, UserName, Subject);
 		}
