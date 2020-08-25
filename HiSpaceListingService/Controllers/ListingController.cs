@@ -543,7 +543,7 @@ namespace HiSpaceListingService.Controllers
 				REProf.ImageUrl = linked.ImageUrl;
 				REProf.REFirstName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_FirstName).First();
 				REProf.RELastName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_LastName).First();
-				vModel.LinkedREPRofessionals.Add(REProf);
+				vModel.LinkedREPRofessionals.Add(REProf); 
 			}
 
 			vModel.LinkedREProfCount = vModel.LinkedREPRofessionals.Count;
@@ -798,6 +798,7 @@ namespace HiSpaceListingService.Controllers
 			return ppl;
 
 		}
+
 		//[HttpGet("GetPeopleDetailByListingID/{ListingID}")]
 		//public async Task<ActionResult<PeopleDetailResponse>> GetPeopleDetailByListingID(int ListingID)
 		//{

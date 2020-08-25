@@ -25,7 +25,7 @@ namespace HiSpaceListingService.Utilities
             {
                 mm.From = new MailAddress(email, "HiSpace Team");
                 mm.Subject = Subject;
-                mm.Body = "<div style='background: #2ecc71;padding: 50px 30px 15px 30px; margin: 30px;'>"
+                mm.Body = "<div style='background: #2ecc71;padding: 50px 30px 15px 30px;'>"
                     + "<div style='width:75%; margin: 0 auto;padding: 30px;background: #fff;font-size: 14px;color: #505050;'>"
 
                     + "<div style='text-align:center;background:#fbe7c8;padding: 10px 10px 5px 10px;'><img src='http://www.thehispace.com/images/logo.png' alt='HiSpace Logo' style='height: 60px' /></div>"
@@ -34,7 +34,7 @@ namespace HiSpaceListingService.Utilities
                     + "<div>Dear <span style='font-weight:600'> HiSpace-User,</span></div>"
 
                     + "<div style='margin: 5px 0; font-weight:600;'>You have one new enquiry</div>"
-                    + "<table style='border-collapse: collapse;border: 1px solid #a2a2a2;background: #fbe7c8;'>"
+                    + "<table style='border-collapse: collapse;border: 1px solid #a2a2a2;background: #fbe7c8;width: 100%'>"
                     + "<tboby>"
                     + "<tr>"
                     +"<th colspan='2' style='text-align:center;border: 1px solid #a2a2a2; padding: 10px;'>Enquired User Details</th>"
@@ -56,9 +56,9 @@ namespace HiSpaceListingService.Utilities
                     + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + Message + "</td>"
                     + "</tr>"
                     + "</tbody>"
-                    +"</table>"
+					+"</table>"
 
-                    + "<br>"
+					+ "<br>"
                     + "<br>"
 
 
@@ -110,7 +110,7 @@ namespace HiSpaceListingService.Utilities
                 mm.From = new MailAddress(email, "HiSpace Team");
                 mm.Subject = Subject;
                 mm.Body =
-                    "<div style='background: #2ecc71;padding: 50px 30px 15px 30px; margin: 30px;'>"
+                    "<div style='background: #2ecc71;padding: 50px 30px 15px 30px;'>"
                     + "<div style='width:75%; margin: 0 auto;padding: 30px;background: #fff;font-size: 14px;color: #505050;'>"
 
                     + "<div style='text-align:center;background:#fbe7c8;padding: 10px 10px 5px 10px;'><img src='http://www.thehispace.com/images/logo.png' alt='HiSpace Logo' style='height: 60px' /></div>"
@@ -190,7 +190,7 @@ namespace HiSpaceListingService.Utilities
             {
                 mm.From = new MailAddress(email, "HiSpace Team");
                 mm.Subject = Subject;
-                mm.Body = "<div style='background: #2ecc71;padding: 50px 30px 15px 30px; margin: 30px;'>"
+                mm.Body = "<div style='background: #2ecc71;padding: 50px 30px 15px 30px;'>"
                     + "<div style='width:75%; margin: 0 auto;padding: 30px;background: #fff;font-size: 14px;color: #505050;'>"
 
                     + "<div style='text-align:center;background:#fbe7c8;padding: 10px 10px 5px 10px;'><img src='http://www.thehispace.com/images/logo.png' alt='HiSpace Logo' style='height: 60px' /></div>"
@@ -254,7 +254,7 @@ namespace HiSpaceListingService.Utilities
             {
                 mm.From = new MailAddress(email, "HiSpace Team");
                 mm.Subject = "Enquiry Success";
-                mm.Body = "<div style='background: #2ecc71;padding: 50px 30px 15px 30px; margin: 30px;'>"
+                mm.Body = "<div style='background: #2ecc71;padding: 50px 30px 15px 30px;'>"
                     + "<div style='width:75%; margin: 0 auto;padding: 30px;background: #fff;font-size: 14px;color: #505050;'>"
 
                     + "<div style='text-align:center;background:#fbe7c8;padding: 10px 10px 5px 10px;'><img src='http://www.thehispace.com/images/logo.png' alt='HiSpace Logo' style='height: 60px' /></div>"
