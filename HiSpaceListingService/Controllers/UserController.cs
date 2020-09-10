@@ -269,6 +269,19 @@ namespace HiSpaceListingService.Controllers
 
 		}
 
+		//contact form enquiry
+		[HttpGet]
+		[Route("SendContactEnquiryEmail/{Name}/{Email}/{Phone}/{Text}")]
+		public bool SendContactEnquiryEmail(string Name, string Email, string Phone, string Text)
+		{
+			var Subject = "New Enquiry";
+			EmailMessage email = new EmailMessage();
+
+			return email.SendContactFormEnquiry(Name, Email, Phone, Text, Subject);
+
+
+		}
+
 		//SendSignupSuccess
 		[HttpGet]
 		[Route("SendSignupSuccess/{Email}/{UserName}/{Password}")]
