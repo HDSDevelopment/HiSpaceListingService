@@ -630,7 +630,7 @@ namespace HiSpaceListingService.Controllers
 			List<PropertyOperatorResponse> listoperators = new List<PropertyOperatorResponse>();
 
 			var users = (from u in _context.Users
-						 where u.UserId != 0 && u.UserStatus == "Completed"
+						 where u.UserId != 0 && u.Status == true
 						 select u).ToList();
 			if (users == null)
 			{
@@ -816,5 +816,62 @@ namespace HiSpaceListingService.Controllers
 
 		//	return peopleDetails;
 		//}
+
+
+		//User level Listing check
+		//GET: api/Listing/UserLevelListApprove/1/1
+		[HttpGet("UserLevelListApprove/{ListingId}/{Status}")]
+		public ActionResult<bool> UserLevelListApprove(int ListingId, bool Status)
+		{
+			bool result = true;
+			if (ListingId == 0)
+			{
+				result = false;
+			}
+			try
+			{
+				var listing = _context.Listings.SingleOrDefault(d => d.ListingId == ListingId);
+				if (listing != null)
+				{
+					listing.Status = Status;
+					_context.Entry(listing).State = EntityState.Modified;
+					_context.SaveChangesAsync();
+				}
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				result = false;
+			}
+			return result;
+		}
+
+
+		//Admin level Listing check
+		//GET: api/Listing/AdminLevelListApprove/1/1
+		[HttpGet("AdminLevelListApprove/{ListingId}/{Status}")]
+		public ActionResult<bool> AdminLevelListApprove(int ListingId, bool Status)
+		{
+			bool result = true;
+			if (ListingId == 0)
+			{
+				result = false;
+			}
+			try
+			{
+				var listing = _context.Listings.SingleOrDefault(d => d.ListingId == ListingId);
+				if (listing != null)
+				{
+					listing.AdminStatus = Status;
+					_context.Entry(listing).State = EntityState.Modified;
+					_context.SaveChangesAsync();
+				}
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				result = false;
+			}
+			return result;
+		}
+
 	}
 }

@@ -50,7 +50,7 @@ namespace HiSpaceListingModels
 		public int? ModifyBy { set; get; }
 
 		public DateTime? ModidyDateTime { get; set; }
-		public string UserStatus { get; set; }
+		public string UserState { get; set; }
 		public bool TermsAndConditions { get; set; }
 		public string ProofName { get; set; }
 		public string ProofNumber { get; set; }

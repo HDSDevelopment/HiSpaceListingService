@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HiSpaceListingService.Utilities;
+using HiSpaceListingService.ViewModel;
 
 namespace HiSpaceListingService.Controllers
 {
@@ -51,7 +52,7 @@ namespace HiSpaceListingService.Controllers
 				Password = _user.Password,
 				UserType = _user.UserType,
 				CompanyName = _user.CompanyName,
-				UserStatus = _user.UserStatus
+				UserStatus = _user.UserState
 			});
 		}
 
@@ -73,6 +74,33 @@ namespace HiSpaceListingService.Controllers
 
 				throw ex;
 			}
+
+		}
+
+		/// <summary>
+		/// Gets the list of all Users.
+		/// </summary>
+		/// <returns>The list of Users.</returns>
+		// GET: api/user/Users
+		[HttpGet]
+		[Route("GetUsersAndPropertyCount")]
+		public async Task<ActionResult<IEnumerable<AdminUserListResponse>>> GetUsersAndPropertyCount()
+		{
+			List<AdminUserListResponse> userList = new List<AdminUserListResponse>();
+			var user = await _context.Users.ToListAsync();
+
+			foreach (var item in user)
+			{
+				AdminUserListResponse lst = new AdminUserListResponse();
+
+				lst.User = new User();
+				lst.User = item;
+				lst.TotalProperties = _context.Listings.Where(d => d.UserId == item.UserId).Count();
+
+				userList.Add(lst);
+			}
+
+			return userList;
 
 		}
 
@@ -183,6 +211,33 @@ namespace HiSpaceListingService.Controllers
 			return CreatedAtAction("GetUsers", user);
 		}
 
+		//Admin activate and block the users
+		//GET: api/user/ApproveByUserId/1/1
+		[HttpGet("ApproveAdminByUserId/{UserId}/{Status}")]
+		public ActionResult<bool> ApproveAdminByUserId(int UserId, bool Status)
+		{
+			bool result = true;
+			if (UserId == 0)
+			{
+				result = false;
+			}
+			try
+			{
+				var user = _context.Users.SingleOrDefault(d => d.UserId == UserId);
+				if (user != null)
+				{
+					user.Status = Status;
+					_context.Entry(user).State = EntityState.Modified;
+					_context.SaveChangesAsync();
+				}
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				result = false;
+			}
+			return result;
+		}
+
 		//GET: api/user/ApproveByUserId/1/completed
 		[HttpGet("ApproveByUserId/{UserId}/{Status}")]
 		public ActionResult<bool> ApproveByUserId(int UserId, string Status)
@@ -197,7 +252,7 @@ namespace HiSpaceListingService.Controllers
 				var user = _context.Users.SingleOrDefault(d => d.UserId == UserId);
 				if (user != null)
 				{
-					user.UserStatus = Status;
+					user.UserState = Status;
 					_context.Entry(user).State = EntityState.Modified;
 					_context.SaveChangesAsync();
 				}

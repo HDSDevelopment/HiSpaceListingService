@@ -144,7 +144,7 @@ namespace HiSpaceListingService.Controllers
 			List<PropertyOperatorResponse> listoperators = new List<PropertyOperatorResponse>();
 
 			var users = (from u in _context.Users
-						 where u.UserId == User && u.UserStatus == "Completed"
+						 where u.UserId == User && u.Status == true
 						 select u).ToList();
 			if (users == null)
 			{

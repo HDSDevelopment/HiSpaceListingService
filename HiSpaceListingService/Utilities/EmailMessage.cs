@@ -103,7 +103,8 @@ namespace HiSpaceListingService.Utilities
 		//contact form enquiry 
 		public bool SendContactFormEnquiry(string Name, string Email, string Phone, string Text, string Subject)
 		{
-			using (MailMessage mm = new MailMessage(email, "support@highbrowdiligence.com"))
+			//using (MailMessage mm = new MailMessage(email, "support@highbrowdiligence.com"))
+			using (MailMessage mm = new MailMessage(email, "tamilarasan@highbrowdiligence.com"))
 			{
 				mm.From = new MailAddress(email, "HiSpace Team");
 				mm.Subject = Subject;
