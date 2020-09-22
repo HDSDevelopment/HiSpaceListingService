@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using HiSpaceListingModels;
@@ -33,6 +34,53 @@ namespace HiSpaceListingService.Controllers
 		//{
 		//	return await _context.Listings.Where(d => d.UserId == UserId).ToListAsync();
 		//}
+
+
+		//Get Enquiry list
+		[HttpGet]
+		[Route("GetEnquiryListByUserIdAndUserType/{UserId}/{UserType}/{Type}")]
+		public async Task<ActionResult<IEnumerable<EnquiryListResponse>>> GetEnquiryListByUserIdAndUserType(int UserId, int UserType, string Type)
+		{
+			List<EnquiryListResponse> enquiryTable = new List<EnquiryListResponse>();
+			if(UserType == 2 || (UserType == 1 && Type == "My"))
+			{
+				var enquiries = await _context.Enquiries.Where(d => d.Sender_UserId == UserId).ToListAsync();
+
+				foreach (var item in enquiries)
+				{
+					EnquiryListResponse lst = new EnquiryListResponse();
+
+					lst.Enquiry = new Enquiry();
+					lst.Enquiry = item;
+					lst.PropertyName = _context.Listings.Where(d => d.ListingId == item.ListingId).Select(d => d.Name).First();
+					lst.Type = _context.Listings.Where(d => d.ListingId == item.ListingId).Select(d => d.ListingType).First();
+					lst.OperatorName = _context.Users.Where(d => d.UserId == item.Listing_UserId).Select(d => d.CompanyName).First();
+
+					enquiryTable.Add(lst);
+				}
+			}
+			else if(UserType == 1 && Type == "User")
+			{
+				var enquiries = await _context.Enquiries.Where(d => d.Listing_UserId == UserId).ToListAsync();
+
+				foreach (var item in enquiries)
+				{
+					EnquiryListResponse lst = new EnquiryListResponse();
+
+					lst.Enquiry = new Enquiry();
+					lst.Enquiry = item;
+					lst.PropertyName = _context.Listings.Where(d => d.ListingId == item.ListingId).Select(d => d.Name).First();
+					lst.Type = _context.Listings.Where(d => d.ListingId == item.ListingId).Select(d => d.ListingType).First();
+					lst.OperatorName = _context.Users.Where(d => d.UserId == item.Listing_UserId).Select(d => d.CompanyName).First();
+
+					enquiryTable.Add(lst);
+				}
+			}
+			
+
+			return enquiryTable;
+		}
+
 		[HttpGet]
 		[Route("GetListingsByUserId/{UserId}")]
 		public async Task<ActionResult<IEnumerable<ListingTableResponse>>> GetListingsByUserId(int UserId)
@@ -434,13 +482,14 @@ namespace HiSpaceListingService.Controllers
 								from r in _context.REProfessionalMasters
 								where (l.UserId == UserID &&
 								(l.ListingType == "Commercial" || l.ListingType == "Co-Working") &&
-								(l.CMCW_ReraId == r.PropertyReraId
-								 || l.CMCW_CTSNumber == r.PropertyAdditionalIdNumber
-								 || l.CMCW_GatNumber == r.PropertyAdditionalIdNumber
-								 || l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber
-								 || l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber
-								 || l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber
-								 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+								(((l.CMCW_ReraId != null && r.PropertyReraId != null) && (l.CMCW_ReraId == r.PropertyReraId))
+								|| ((l.CMCW_CTSNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_CTSNumber == r.PropertyAdditionalIdNumber))
+								|| ((l.CMCW_GatNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_GatNumber == r.PropertyAdditionalIdNumber))
+								|| ((l.CMCW_MilkatNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber))
+								|| ((l.CMCW_PlotNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber))
+								|| ((l.CMCW_SurveyNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber))
+								|| ((l.CMCW_PropertyTaxBillNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+								 ))
 								select new
 								{
 									l.ListingId,
@@ -451,6 +500,7 @@ namespace HiSpaceListingService.Controllers
 									r.OperatorName,
 									r.ImageUrl,
 									r.LinkingStatus
+
 								}).ToList();
 			foreach (var linked in linkedREProf)
 			{
@@ -647,6 +697,7 @@ namespace HiSpaceListingService.Controllers
 				op.TotalCommercial = _context.Listings.Where(d => d.ListingType == "Commercial" && d.UserId == item.UserId).Count();
 				op.TotalCoWorking = _context.Listings.Where(d => d.ListingType == "Co-Working" && d.UserId == item.UserId).Count();
 				op.TotalREProfessional = _context.Listings.Where(d => d.ListingType == "RE-Professional" && d.UserId == item.UserId).Count();
+
 				//geting roles
 				var GetListingIdByUsingUser = (from l in _context.Listings
 									where (l.UserId == item.UserId && l.Status == true && l.ListingType == "RE-Professional")

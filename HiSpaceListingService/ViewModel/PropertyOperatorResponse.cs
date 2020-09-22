@@ -19,6 +19,7 @@ namespace HiSpaceListingService.ViewModel
         public int TotalCommercial { get; set; }
         public int TotalCoWorking { get; set; }
         public int TotalREProfessional { get; set; }
+
         public List<LinkedREPRofessionals> LinkedREProf { get; set; }
         public int LinkedREProfCount { get; set; }
         public List<string> roles { get; set; }
