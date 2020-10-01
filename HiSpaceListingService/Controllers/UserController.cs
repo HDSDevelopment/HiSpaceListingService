@@ -30,7 +30,7 @@ namespace HiSpaceListingService.Controllers
 		// POST: api/user/AuthenticateUser
 		[HttpPost]
 		[Route("AuthenticateUser")]
-		public async Task<ActionResult<User>> AuthenticateUser([FromBody] User user)
+		public async Task<ActionResult<User>> AuthenticateUser(    User user)
 		{
 			var _user = await _context.Users.FirstOrDefaultAsync(d => d.Email == user.Email && d.Password == user.Password && d.Status == true && d.UserType == user.UserType);
 

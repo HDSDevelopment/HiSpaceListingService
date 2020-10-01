@@ -11,6 +11,7 @@ namespace HiSpaceListingService.ViewModel
 		public PropertyDetailResponse()
 		{
 			ListingImagesList = new List<ListingImages>();
+			LinkedREProf = new List<LinkedREPRofessionals>();
 		}
 		public Listing SpaceListing { get; set; }
 		public User SpaceUser { get; set; }
@@ -19,7 +20,9 @@ namespace HiSpaceListingService.ViewModel
 		public int AvailableProjects { get; set; }
 		public int AvailableHealthCheck { get; set; }
 		public int AvailableGreenBuildingCheck { get; set; }
+		public int LinkedREProfCount { get; set; }
 		public List<ListingImages> ListingImagesList {get; set;}
+		public List<LinkedREPRofessionals> LinkedREProf {get; set;}
 		public GreenBuildingCheck GreenBuildingCheckDetails { get; set; }
 
 	}

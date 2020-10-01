@@ -264,7 +264,120 @@ namespace HiSpaceListingService.Controllers
 			}
 			return response;
 		}
+		//Operator filter dropdown start
+		// GET: api/Common/GetOperatorListForOperatorFilter/Location
+		[HttpGet]
+		[Route("GetOperatorListForOperatorFilter/{Location}")]
+		public async Task<ActionResult<IEnumerable<OperatorFilterOperatorList>>> GetOperatorListForOperatorFilter(string Location)
+		{
+			List<OperatorFilterOperatorList> response = new List<OperatorFilterOperatorList>();
+			var Listers = await _context.Users.ToListAsync();
+			if(Location == "All")
+			{
 
+				Listers = await _context.Users.Where(d => d.Status == true && d.UserType == 1).OrderBy(d => d.UserId).ToListAsync();
+			}
+			else
+			{
+				Listers = await _context.Users.Where(d => d.Status == true && d.UserType == 1 && d.City == Location).OrderBy(d => d.UserId).ToListAsync();
+			}
+			foreach (var item in Listers)
+			{
+				response.Add(new OperatorFilterOperatorList()
+				{
+					UserId = item.UserId,
+					CompanyName = item.CompanyName,
+					PropertyCount = _context.Listings.Count(d => d.UserId == item.UserId)
+				});
+			}
+			return response;
+		}
+		//People filter dropdown start
+		// GET: api/Common/GetPeopleListForPeopleFilter/Location
+		[HttpGet]
+		[Route("GetPeopleListForPeopleFilter/{Location}")]
+		public async Task<ActionResult<IEnumerable<PeopleFilterPeopleList>>> GetPeopleListForPeopleFilter(string Location)
+		{
+			List<PeopleFilterPeopleList> response = new List<PeopleFilterPeopleList>();
+			var Listers = await _context.Listings.ToListAsync();
+			if (Location == "All")
+			{
+				Listers = await _context.Listings.Where(d => d.Status == true && d.AdminStatus == true && d.ListingType == "RE-Professional").OrderBy(d => d.ListingId).ToListAsync();
+			}
+			else
+			{
+				Listers = await _context.Listings.Where(d => d.Status == true && d.AdminStatus == true && d.ListingType == "RE-Professional" && d.locality == Location).OrderBy(d => d.ListingId).ToListAsync();
+			}
+			foreach (var item in Listers)
+			{
+				response.Add(new PeopleFilterPeopleList()
+				{
+					ListingId = item.ListingId,
+					RE_FirstName = item.RE_FirstName,
+					RE_LastName = item.RE_LastName,
+					RE_FullName = item.RE_FirstName+" - "+item.RE_LastName,
+					ProjectCount = _context.REProfessionalMasters.Count(d => d.ListingId == item.ListingId)
+				});
+			}
+			return response;
+		}
+		// GET: api/Common/GetLocationListForOperatorFilter/
+		[HttpGet]
+		[Route("GetLocationListForOperatorFilter")]
+		public async Task<ActionResult<IEnumerable<LocationFilterOperatorList>>> GetLocationListForOperatorFilter()
+		{
+			List<LocationFilterOperatorList> response = new List<LocationFilterOperatorList>();
+			var Listers = await _context.Users.Where(d => d.Status == true && d.UserType == 1).Select(d => d.City).Distinct().ToListAsync();
+			foreach (var item in Listers)
+			{
+				if(item != null)
+					response.Add(new LocationFilterOperatorList()
+					{
+						OperatorLocation = item
+					});
+			}
+			return response;
+		}
+		//Operator filter dropdown end
+
+		//property filter start
+		// GET: api/Common/GetLocationListForPropertyFilter/
+		[HttpGet]
+		[Route("GetLocationListForPropertyFilter")]
+		public async Task<ActionResult<IEnumerable<LocationFilterPropertyList>>> GetLocationListForPropertyFilter()
+		{
+			List<LocationFilterPropertyList> response = new List<LocationFilterPropertyList>();
+			var Listers = await _context.Listings.Where(d => d.Status == true && d.AdminStatus == true && (d.ListingType == "Commercial" || d.ListingType == "Co-Working")).Select(d => d.locality).Distinct().ToListAsync();
+			foreach (var item in Listers)
+			{
+				if (item != null)
+					response.Add(new LocationFilterPropertyList()
+					{
+						PropertyLocation = item
+					});
+			}
+			return response;
+		}
+
+		//People filter start
+		// GET: api/Common/GetLocationListForPeopleFilter/
+		[HttpGet]
+		[Route("GetLocationListForPeopleFilter")]
+		public async Task<ActionResult<IEnumerable<LocationFilterPropertyList>>> GetLocationListForPeopleFilter()
+		{
+			List<LocationFilterPropertyList> response = new List<LocationFilterPropertyList>();
+			var Listers = await _context.Listings.Where(d => d.Status == true && d.AdminStatus == true && d.ListingType == "RE-Professional" ).Select(d => d.locality).Distinct().ToListAsync();
+			foreach (var item in Listers)
+			{
+				if (item != null)
+					response.Add(new LocationFilterPropertyList()
+					{
+						PropertyLocation = item
+					});
+			}
+			return response;
+		}
+		//property filter end
 		// GET: api/Common/GetAllPeopleSearch/
 		[HttpGet]
 		[Route("GetAllPeopleSearch")]

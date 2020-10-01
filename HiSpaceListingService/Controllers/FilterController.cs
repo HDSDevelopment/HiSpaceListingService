@@ -184,14 +184,15 @@ namespace HiSpaceListingService.Controllers
 				var linkedREProf = (from l in _context.Listings
 									from r in _context.REProfessionalMasters
 									where (l.UserId == item.UserId &&
-									(l.ListingType == "Commercial" || l.ListingType == "Co-Working") &&
-									(l.CMCW_ReraId == r.PropertyReraId
-									 || l.CMCW_CTSNumber == r.PropertyAdditionalIdNumber
-									 || l.CMCW_GatNumber == r.PropertyAdditionalIdNumber
-									 || l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber
-									 || l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber
-									 || l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber
-									 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+							   (l.ListingType == "Commercial" || l.ListingType == "Co-Working") &&
+							   (((l.CMCW_ReraId != null && r.PropertyReraId != null) && (l.CMCW_ReraId == r.PropertyReraId))
+							   || ((l.CMCW_CTSNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_CTSNumber == r.PropertyAdditionalIdNumber))
+							   || ((l.CMCW_GatNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_GatNumber == r.PropertyAdditionalIdNumber))
+							   || ((l.CMCW_MilkatNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber))
+							   || ((l.CMCW_PlotNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber))
+							   || ((l.CMCW_SurveyNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber))
+							   || ((l.CMCW_PropertyTaxBillNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+								))
 									select new
 									{
 										l.ListingId,

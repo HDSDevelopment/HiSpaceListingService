@@ -21,6 +21,7 @@ namespace HiSpaceListingService.ViewModel
         public Listing Listing { get; set; }
         public List<LinkedOperators> LinkedOpr { get; set; }
         public List<REProfessionalMaster> Projects { get; set; }
+        public List<string> Roles { get; set; }
         public int TotalProjects { get; set; }
     }
 }
