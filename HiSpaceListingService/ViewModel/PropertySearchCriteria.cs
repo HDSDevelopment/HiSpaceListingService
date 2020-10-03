@@ -20,7 +20,7 @@ public int? PriceMax { get; set; }
 
 public bool IsValidCMCW_PropertyFor()
 {
-return ListingType=="Rental" || ListingType == "Sale" ? true : false;    
+return CMCW_PropertyFor == "Rental" || CMCW_PropertyFor == "Sale" ? true : false;    
 }
 
 public bool IsValidListingType()

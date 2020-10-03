@@ -30,7 +30,7 @@ namespace HiSpaceListingService.Controllers
 		{
 			List<PropertyLocationSearchResponse> response = new List<PropertyLocationSearchResponse>();
 			var locations = from r in _context.Listings
-							where r.ListingType != "RE-Professional"
+							where r.ListingType != "RE-Professional" && r.AdminStatus == true && r.Status == true
 							group r by r.locality into g
 							select new
 							{
@@ -59,7 +59,7 @@ namespace HiSpaceListingService.Controllers
 		{
 			List<PropertyAndPeopleDetailWithLinkedSearchResponse> response = new List<PropertyAndPeopleDetailWithLinkedSearchResponse>();
 			var properties = from r in _context.Listings
-							 where r.UserId == UserID
+							 where r.UserId == UserID && r.AdminStatus == true && r.Status == true
 							 select new { r };
 			foreach (var item in properties)
 			{
@@ -138,6 +138,7 @@ namespace HiSpaceListingService.Controllers
 		{
 			List<PropertyTypeSearchResponse> response = new List<PropertyTypeSearchResponse>();
 			var Types = from r in _context.Listings
+						 where r.AdminStatus == true && r.Status == true
 							group r by r.ListingType into g
 							select new
 							{
@@ -232,14 +233,14 @@ namespace HiSpaceListingService.Controllers
 		public async Task<ActionResult<IEnumerable<PropertyListerSearchResponse>>> GetAllPropertyListerSearch()
 		{
 			List<PropertyListerSearchResponse> response = new List<PropertyListerSearchResponse>();
-			var Listers = await _context.Users.OrderBy(d => d.UserId).ToListAsync();
+			var Listers = await _context.Users.Where(m => m.Status == true).OrderBy(d => d.UserId).ToListAsync();
 			foreach (var item in Listers)
 			{
 				response.Add(new PropertyListerSearchResponse()
 				{
 					UserId = item.UserId,
 					CompanyName = item.CompanyName,
-					PropertyListerInUseCount = _context.Listings.Count(d => d.UserId == item.UserId && d.ListingType != "RE-Professional")
+					PropertyListerInUseCount = _context.Listings.Count(d => d.UserId == item.UserId && d.ListingType != "RE-Professional" && d.Status == true && d.AdminStatus == true)
 				});
 			}
 			return response;
@@ -259,7 +260,7 @@ namespace HiSpaceListingService.Controllers
 				{
 					UserId = item.UserId,
 					CompanyName = item.CompanyName,
-					PropertyListerInUseCount = _context.Listings.Count(d => d.UserId == item.UserId)
+					PropertyListerInUseCount = _context.Listings.Count(d => d.UserId == item.UserId && d.Status == true && d.AdminStatus == true)
 				});
 			}
 			return response;
@@ -287,7 +288,7 @@ namespace HiSpaceListingService.Controllers
 				{
 					UserId = item.UserId,
 					CompanyName = item.CompanyName,
-					PropertyCount = _context.Listings.Count(d => d.UserId == item.UserId)
+					PropertyCount = _context.Listings.Count(d => d.UserId == item.UserId && d.Status == true && d.AdminStatus == true)
 				});
 			}
 			return response;
@@ -315,7 +316,7 @@ namespace HiSpaceListingService.Controllers
 					ListingId = item.ListingId,
 					RE_FirstName = item.RE_FirstName,
 					RE_LastName = item.RE_LastName,
-					RE_FullName = item.RE_FirstName+" - "+item.RE_LastName,
+					RE_FullName = item.RE_FirstName+"-"+item.RE_LastName,
 					ProjectCount = _context.REProfessionalMasters.Count(d => d.ListingId == item.ListingId)
 				});
 			}
