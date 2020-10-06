@@ -30,7 +30,7 @@ namespace HiSpaceListingService.Controllers
 		{
 			List<PropertyLocationSearchResponse> response = new List<PropertyLocationSearchResponse>();
 			var locations = from r in _context.Listings
-							where r.ListingType != "RE-Professional" && r.AdminStatus == true && r.Status == true
+							where r.ListingType != "RE-Professional" && r.AdminStatus == true && r.Status == true && r.DeletedStatus == false
 							group r by r.locality into g
 							select new
 							{
@@ -59,7 +59,7 @@ namespace HiSpaceListingService.Controllers
 		{
 			List<PropertyAndPeopleDetailWithLinkedSearchResponse> response = new List<PropertyAndPeopleDetailWithLinkedSearchResponse>();
 			var properties = from r in _context.Listings
-							 where r.UserId == UserID && r.AdminStatus == true && r.Status == true
+							 where r.UserId == UserID && r.AdminStatus == true && r.Status == true && r.DeletedStatus == false
 							 select new { r };
 			foreach (var item in properties)
 			{
@@ -87,15 +87,16 @@ namespace HiSpaceListingService.Controllers
 			//geting linked re-prof
 			var linkedREProf = (from l in _context.Listings
 								from r in _context.REProfessionalMasters
-								where (l.UserId == UserID &&
-								(l.ListingType == "Commercial" || l.ListingType == "Co-Working") &&
-								(l.CMCW_ReraId == r.PropertyReraId
-								 || l.CMCW_CTSNumber == r.PropertyAdditionalIdNumber
-								 || l.CMCW_GatNumber == r.PropertyAdditionalIdNumber
-								 || l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber
-								 || l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber
-								 || l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber
-								 || l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+								where (l.UserId == UserID && l.DeletedStatus == false &&
+							   (l.ListingType == "Commercial" || l.ListingType == "Co-Working") &&
+							  (((l.CMCW_ReraId != null && r.PropertyReraId != null) && (l.CMCW_ReraId == r.PropertyReraId))
+							  || ((l.CMCW_CTSNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_CTSNumber == r.PropertyAdditionalIdNumber))
+							  || ((l.CMCW_GatNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_GatNumber == r.PropertyAdditionalIdNumber))
+							  || ((l.CMCW_MilkatNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_MilkatNumber == r.PropertyAdditionalIdNumber))
+							  || ((l.CMCW_PlotNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_PlotNumber == r.PropertyAdditionalIdNumber))
+							  || ((l.CMCW_SurveyNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_SurveyNumber == r.PropertyAdditionalIdNumber))
+							  || ((l.CMCW_PropertyTaxBillNumber != null && r.PropertyAdditionalIdNumber != null) && (l.CMCW_PropertyTaxBillNumber == r.PropertyAdditionalIdNumber))
+							   ) && r.DeletedStatus == false)
 								select new
 								{
 									l.ListingId,
@@ -138,7 +139,7 @@ namespace HiSpaceListingService.Controllers
 		{
 			List<PropertyTypeSearchResponse> response = new List<PropertyTypeSearchResponse>();
 			var Types = from r in _context.Listings
-						 where r.AdminStatus == true && r.Status == true
+						 where r.AdminStatus == true && r.Status == true && r.DeletedStatus == false
 							group r by r.ListingType into g
 							select new
 							{
@@ -240,7 +241,7 @@ namespace HiSpaceListingService.Controllers
 				{
 					UserId = item.UserId,
 					CompanyName = item.CompanyName,
-					PropertyListerInUseCount = _context.Listings.Count(d => d.UserId == item.UserId && d.ListingType != "RE-Professional" && d.Status == true && d.AdminStatus == true)
+					PropertyListerInUseCount = _context.Listings.Count(d => d.UserId == item.UserId && d.ListingType != "RE-Professional" && d.Status == true && d.AdminStatus == true && d.DeletedStatus == false)
 				});
 			}
 			return response;
@@ -260,7 +261,7 @@ namespace HiSpaceListingService.Controllers
 				{
 					UserId = item.UserId,
 					CompanyName = item.CompanyName,
-					PropertyListerInUseCount = _context.Listings.Count(d => d.UserId == item.UserId && d.Status == true && d.AdminStatus == true)
+					PropertyListerInUseCount = _context.Listings.Count(d => d.UserId == item.UserId && d.Status == true && d.AdminStatus == true && d.DeletedStatus == false)
 				});
 			}
 			return response;
@@ -288,7 +289,7 @@ namespace HiSpaceListingService.Controllers
 				{
 					UserId = item.UserId,
 					CompanyName = item.CompanyName,
-					PropertyCount = _context.Listings.Count(d => d.UserId == item.UserId && d.Status == true && d.AdminStatus == true)
+					PropertyCount = _context.Listings.Count(d => d.UserId == item.UserId && d.Status == true && d.AdminStatus == true && d.DeletedStatus == false)
 				});
 			}
 			return response;
@@ -303,11 +304,11 @@ namespace HiSpaceListingService.Controllers
 			var Listers = await _context.Listings.ToListAsync();
 			if (Location == "All")
 			{
-				Listers = await _context.Listings.Where(d => d.Status == true && d.AdminStatus == true && d.ListingType == "RE-Professional").OrderBy(d => d.ListingId).ToListAsync();
+				Listers = await _context.Listings.Where(d => d.Status == true && d.AdminStatus == true && d.ListingType == "RE-Professional" && d.DeletedStatus == false).OrderBy(d => d.ListingId).ToListAsync();
 			}
 			else
 			{
-				Listers = await _context.Listings.Where(d => d.Status == true && d.AdminStatus == true && d.ListingType == "RE-Professional" && d.locality == Location).OrderBy(d => d.ListingId).ToListAsync();
+				Listers = await _context.Listings.Where(d => d.Status == true && d.AdminStatus == true && d.ListingType == "RE-Professional" && d.locality == Location && d.DeletedStatus == false).OrderBy(d => d.ListingId).ToListAsync();
 			}
 			foreach (var item in Listers)
 			{
@@ -348,7 +349,7 @@ namespace HiSpaceListingService.Controllers
 		public async Task<ActionResult<IEnumerable<LocationFilterPropertyList>>> GetLocationListForPropertyFilter()
 		{
 			List<LocationFilterPropertyList> response = new List<LocationFilterPropertyList>();
-			var Listers = await _context.Listings.Where(d => d.Status == true && d.AdminStatus == true && (d.ListingType == "Commercial" || d.ListingType == "Co-Working")).Select(d => d.locality).Distinct().ToListAsync();
+			var Listers = await _context.Listings.Where(d => d.Status == true && d.AdminStatus == true && d.DeletedStatus == false && (d.ListingType == "Commercial" || d.ListingType == "Co-Working")).Select(d => d.locality).Distinct().ToListAsync();
 			foreach (var item in Listers)
 			{
 				if (item != null)
@@ -367,7 +368,7 @@ namespace HiSpaceListingService.Controllers
 		public async Task<ActionResult<IEnumerable<LocationFilterPropertyList>>> GetLocationListForPeopleFilter()
 		{
 			List<LocationFilterPropertyList> response = new List<LocationFilterPropertyList>();
-			var Listers = await _context.Listings.Where(d => d.Status == true && d.AdminStatus == true && d.ListingType == "RE-Professional" ).Select(d => d.locality).Distinct().ToListAsync();
+			var Listers = await _context.Listings.Where(d => d.Status == true && d.AdminStatus == true && d.DeletedStatus == false && d.ListingType == "RE-Professional" ).Select(d => d.locality).Distinct().ToListAsync();
 			foreach (var item in Listers)
 			{
 				if (item != null)
@@ -386,7 +387,7 @@ namespace HiSpaceListingService.Controllers
 		public async Task<ActionResult<IEnumerable<PeopleNameSearchResponse>>> GetAllPeopleSearch()
 		{
 			List<PeopleNameSearchResponse> response = new List<PeopleNameSearchResponse>();
-			var People = await _context.Listings.Where(d => d.ListingType == "RE-Professional").ToListAsync();
+			var People = await _context.Listings.Where(d => d.ListingType == "RE-Professional" && d.DeletedStatus == false).ToListAsync();
 			foreach (var item in People)
 			{
 				response.Add(new PeopleNameSearchResponse()

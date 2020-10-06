@@ -88,5 +88,6 @@ namespace HiSpaceListingModels
 		public string RE_LastName { set; get; }
 		public decimal? CMCW_AproximatePrice { set; get; }
 		public bool AdminStatus { set; get; }
+		public bool DeletedStatus { set; get; }
 	}
 }

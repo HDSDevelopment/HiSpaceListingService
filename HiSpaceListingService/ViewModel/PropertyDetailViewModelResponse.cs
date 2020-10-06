@@ -31,5 +31,7 @@ namespace HiSpaceListingService.ViewModel
 		public GreenBuildingCheck GreenBuildingCheck { set; get; }
 		public int ListerPropertyCount { set; get; }
 		public int ProjectCount { set; get; }
+		public List<LinkedREPRofessionals> LinkedREProf { get; set; }
+		public int LinkedREProfCount { get; set; }
 	}
 }

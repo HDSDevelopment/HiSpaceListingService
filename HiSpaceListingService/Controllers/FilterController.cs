@@ -30,7 +30,7 @@ namespace HiSpaceListingService.Controllers
 		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetListingPropertyByLocation(string Location)
 		{
 			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
-			IEnumerable<Listing> properties = await _context.Listings.Where(m => m.Status == true && m.AdminStatus == true && m.locality == Location && m.ListingType != "RE-Professional").OrderByDescending(d => d.CreatedDateTime).ToListAsync();
+			IEnumerable<Listing> properties = await _context.Listings.Where(m => m.Status == true && m.AdminStatus == true && m.locality == Location && m.ListingType != "RE-Professional"  && m.DeletedStatus == false).OrderByDescending(d => d.CreatedDateTime).ToListAsync();
 
 			if (properties == null)
 				return BadRequest();
@@ -79,14 +79,14 @@ namespace HiSpaceListingService.Controllers
 				//geting linked re-prof			
 				var linkedREProf = (from r in _context.REProfessionalMasters
 									where (
-									((r.PropertyReraId != null && item.CMCW_ReraId != null) && (r.PropertyReraId == item.CMCW_ReraId))
+									(((r.PropertyReraId != null && item.CMCW_ReraId != null) && (r.PropertyReraId == item.CMCW_ReraId))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_CTSNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_CTSNumber))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_MilkatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_MilkatNumber))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_PlotNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_PlotNumber))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_SurveyNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_SurveyNumber))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_PropertyTaxBillNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_PropertyTaxBillNumber))
-										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_GatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_GatNumber))
-										 && (r.LinkingStatus == "Approved"))
+										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_GatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_GatNumber)))
+										 && (r.LinkingStatus == "Approved")  && (r.DeletedStatus == false))
 									select new
 									{
 										item.ListingId,
@@ -137,7 +137,7 @@ namespace HiSpaceListingService.Controllers
 		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetListingPropertyByType(string Type)
 		{
 			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
-			IEnumerable<Listing> properties = await _context.Listings.Where(m => m.Status == true && m.AdminStatus == true && m.ListingType == Type && m.ListingType != "RE-Professional").OrderByDescending(d => d.CreatedDateTime).ToListAsync();
+			IEnumerable<Listing> properties = await _context.Listings.Where(m => m.Status == true && m.AdminStatus == true && m.ListingType == Type && m.ListingType != "RE-Professional" && m.DeletedStatus == false).OrderByDescending(d => d.CreatedDateTime).ToListAsync();
 
 			if (properties == null)
 				return BadRequest();
@@ -186,14 +186,14 @@ namespace HiSpaceListingService.Controllers
 				//geting linked re-prof			
 				var linkedREProf = (from r in _context.REProfessionalMasters
 									where (
-									((r.PropertyReraId != null && item.CMCW_ReraId != null) && (r.PropertyReraId == item.CMCW_ReraId))
+									(((r.PropertyReraId != null && item.CMCW_ReraId != null) && (r.PropertyReraId == item.CMCW_ReraId))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_CTSNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_CTSNumber))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_MilkatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_MilkatNumber))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_PlotNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_PlotNumber))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_SurveyNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_SurveyNumber))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_PropertyTaxBillNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_PropertyTaxBillNumber))
-										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_GatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_GatNumber))
-										 && (r.LinkingStatus == "Approved"))
+										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_GatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_GatNumber)))
+										 && (r.LinkingStatus == "Approved") && (r.DeletedStatus == false))
 									select new
 									{
 										item.ListingId,
@@ -243,7 +243,7 @@ namespace HiSpaceListingService.Controllers
 		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetListingPropertyByUser(int User)
 		{
 			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
-			IEnumerable<Listing> properties = await _context.Listings.Where(m => m.Status == true && m.AdminStatus == true && m.UserId == User && m.ListingType != "RE-Professional").OrderByDescending(d => d.CreatedDateTime).ToListAsync();
+			IEnumerable<Listing> properties = await _context.Listings.Where(m => m.Status == true && m.AdminStatus == true && m.UserId == User && m.ListingType != "RE-Professional" && m.DeletedStatus == false).OrderByDescending(d => d.CreatedDateTime).ToListAsync();
 
 			if (properties == null)
 				return BadRequest();
@@ -292,14 +292,14 @@ namespace HiSpaceListingService.Controllers
 				//geting linked re-prof			
 				var linkedREProf = (from r in _context.REProfessionalMasters
 									where (
-									((r.PropertyReraId != null && item.CMCW_ReraId != null) && (r.PropertyReraId == item.CMCW_ReraId))
+									(((r.PropertyReraId != null && item.CMCW_ReraId != null) && (r.PropertyReraId == item.CMCW_ReraId))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_CTSNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_CTSNumber))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_MilkatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_MilkatNumber))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_PlotNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_PlotNumber))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_SurveyNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_SurveyNumber))
 										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_PropertyTaxBillNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_PropertyTaxBillNumber))
-										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_GatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_GatNumber))
-										 && (r.LinkingStatus == "Approved"))
+										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_GatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_GatNumber)))
+										 && (r.LinkingStatus == "Approved") && (r.DeletedStatus == false))
 									select new
 									{
 										item.ListingId,
@@ -359,27 +359,27 @@ namespace HiSpaceListingService.Controllers
 				operatorResponse.Operator = item;
 
                     IEnumerable<Listing> listingsByUserID = await (from listing in _context.Listings
-                                                                   where listing.UserId == item.UserId
+                                                                   where listing.UserId == item.UserId && listing.DeletedStatus == false
                                                                    select listing).ToListAsync();
 
                     operatorResponse.TotalCommercial = (from listing in listingsByUserID
-														where listing.ListingType == "Commercial" && listing.Status == true && listing.AdminStatus == true
+														where listing.ListingType == "Commercial" && listing.Status == true && listing.AdminStatus == true && listing.DeletedStatus == false
 														select listing)
 														.Count();
 				
 				operatorResponse.TotalCoWorking = (from listing in listingsByUserID
-													where listing.ListingType == "Co-Working" && listing.Status == true && listing.AdminStatus == true
+													where listing.ListingType == "Co-Working" && listing.Status == true && listing.AdminStatus == true && listing.DeletedStatus == false
 													select listing)
 													.Count();
 				
 				operatorResponse.TotalREProfessional = (from listing in listingsByUserID
-														where listing.ListingType == "RE-Professional" && listing.Status == true && listing.AdminStatus == true
+														where listing.ListingType == "RE-Professional" && listing.Status == true && listing.AdminStatus == true && listing.DeletedStatus == false
 														select listing)
 														.Count();
 																	
 				//getting roles
 				IEnumerable<int> REProfessionalIDGroup = from listing in listingsByUserID
-					where listing.Status == true  && listing.ListingType == "RE-Professional"
+					where listing.Status == true && listing.ListingType == "RE-Professional" && listing.DeletedStatus == false
                     select listing.ListingId;
 
                     operatorResponse.roles = null;
@@ -400,7 +400,7 @@ namespace HiSpaceListingService.Controllers
 				//geting linked re-prof
 				var linkedREProfGroup = (from listing in listingsByUserID
 									from ReProf in _context.REProfessionalMasters
-									where ((listing.ListingType == "Commercial" || listing.ListingType == "Co-Working") && 
+									where ((listing.ListingType == "Commercial" || listing.ListingType == "Co-Working") && listing.DeletedStatus == false && 
 									 (((listing.CMCW_ReraId != null && ReProf.PropertyReraId != null) && (listing.CMCW_ReraId == ReProf.PropertyReraId))
 								|| ((listing.CMCW_CTSNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_CTSNumber == ReProf.PropertyAdditionalIdNumber))
 								|| ((listing.CMCW_GatNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_GatNumber == ReProf.PropertyAdditionalIdNumber))
@@ -409,7 +409,7 @@ namespace HiSpaceListingService.Controllers
 								|| ((listing.CMCW_SurveyNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_SurveyNumber == ReProf.PropertyAdditionalIdNumber))
 								|| ((listing.CMCW_PropertyTaxBillNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_PropertyTaxBillNumber == ReProf.PropertyAdditionalIdNumber))
 								 )
-									 && (ReProf.LinkingStatus == "Approved"))
+									 && (ReProf.LinkingStatus == "Approved") && ReProf.DeletedStatus == false)
 									select new
 									{
 										listing.ListingId,
@@ -513,7 +513,7 @@ namespace HiSpaceListingService.Controllers
 				var linkedOperators = (from listing in listings
 									   from project in projects
 									   where (
-									   (listing.ListingType == "Commercial" || listing.ListingType == "Co-Working") &&
+									   (listing.ListingType == "Commercial" || listing.ListingType == "Co-Working") && listing.DeletedStatus == false &&
 										(((listing.CMCW_ReraId != null && project.PropertyReraId != null) && (listing.CMCW_ReraId == project.PropertyReraId))
 								   || ((listing.CMCW_CTSNumber != null && project.PropertyAdditionalIdNumber != null) && (listing.CMCW_CTSNumber == project.PropertyAdditionalIdNumber))
 								   || ((listing.CMCW_GatNumber != null && project.PropertyAdditionalIdNumber != null) && (listing.CMCW_GatNumber == project.PropertyAdditionalIdNumber))
@@ -522,7 +522,7 @@ namespace HiSpaceListingService.Controllers
 								   || ((listing.CMCW_SurveyNumber != null && project.PropertyAdditionalIdNumber != null) && (listing.CMCW_SurveyNumber == project.PropertyAdditionalIdNumber))
 								   || ((listing.CMCW_PropertyTaxBillNumber != null && project.PropertyAdditionalIdNumber != null) && (listing.CMCW_PropertyTaxBillNumber == project.PropertyAdditionalIdNumber))
 									)
-										&& (project.LinkingStatus == "Approved") && (project.ListingId == professionalResponse.Listing.ListingId))
+										&& (project.LinkingStatus == "Approved") && (project.ListingId == professionalResponse.Listing.ListingId) && project.DeletedStatus == false)
 									   select new
 									   {
 										   listing.ListingId,

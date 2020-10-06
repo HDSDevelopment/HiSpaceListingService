@@ -26,6 +26,7 @@ namespace HiSpaceListingModels
 		public string ProjectRole { set; get; }
 		public string OperatorName { set; get; }
 		public string LinkingStatus { set; get; }
+		public bool DeletedStatus { set; get; }
 
 	}
 }

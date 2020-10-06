@@ -95,7 +95,7 @@ namespace HiSpaceListingService.Controllers
 
 				lst.User = new User();
 				lst.User = item;
-				lst.TotalProperties = _context.Listings.Where(d => d.UserId == item.UserId).Count();
+				lst.TotalProperties = _context.Listings.Where(d => d.UserId == item.UserId && d.DeletedStatus == false).Count();
 
 				userList.Add(lst);
 			}
