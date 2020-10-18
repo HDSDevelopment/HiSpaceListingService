@@ -393,5 +393,79 @@ namespace HiSpaceListingService.Utilities
             return true;
         }
 
-    }
+		//password recovery
+
+		//Signup
+		public bool SendPassword(string ToEmail, string Subject, string Name, string Password)
+		{
+			using (MailMessage mm = new MailMessage(email, ToEmail))
+			{
+				mm.From = new MailAddress(email, "HiSpace Team");
+				mm.Subject = Subject;
+				mm.Body =
+					"<div style='background: #2ecc71;padding: 50px 30px 15px 30px;'>"
+					+ "<div style='width:75%; margin: 0 auto;padding: 30px;background: #fff;font-size: 14px;color: #505050;'>"
+
+					+ "<div style='text-align:center;background:#fbe7c8;padding: 10px 10px 5px 10px;'><img src='http://www.thehispace.com/images/logo.png' alt='HiSpace Logo' style='height: 60px' /></div>"
+
+					+ "<div>"
+					+ "<div> <h1> <span style='font-weight:600'>Welcome," + Name + "!</span> </h1></div>"
+
+					+ "<div>"
+					+ "<h2 style='margin-bottom:15px'>Your account details</h2>"
+					 + "<div><span style='font-weight:600'> To login, Visit: <a href='https://www.thehispace.com/'>https://www.thehispace.com/</a></span></div>"
+					 + "<div><span style='font-weight:600'> Your Login Id: " + ToEmail + "</span></div>"
+					+ "<div> <span style='font-weight:600'>Password: " + Password + "</span></div>"
+					+ "</div>"
+					+ "<br>"
+
+					+ "<div>"
+					+ "<h2 style='margin-bottom:0'>Need a hand?</h2>"
+					+ "<p>You can email the team anytime (24/7). If you ever feel stuck technically or creatively, just yell and we'll come running!</p>"
+					+ "</div>"
+					+ "<br>"
+
+					+ "<br>"
+					+ "<div>Cheers,</div>"
+					+ "<div>HiSpace Team</div>"
+					+ "</div>"
+
+					+ "<br>" + "<br>"
+					+ "<div style='color:#999999;font-size:11px;text-align:center;'> ©2020 HiSpace | Plot No. 267 | 2nd Floor | 2nd Main Road | Nehru Nagar | Kandanchavadi | Chennai | 600096"
+				   + "</div>"
+
+					+ "</div>"
+
+					+ "<br>" + "<br>"
+					+ "<div style='text-align: center'>"
+					+ "<a style='color:#000000;font-size:10px;text-decoration:none;' href='https://www.hdsre.com/' target='_blank'><span style='font-family:Helvetica Neue,Helvetica,Arial,Verdana,sans-serif;font-size:12px;opacity:0.75;color:#000000'>Powered by <em style='font-style:normal;text-decoration:underline;font-weight:bold'> Highbrow Diligence Services Limited</em>®</span></a>"
+					+ "</div>"
+
+					+ "</div>"
+					;
+				mm.IsBodyHtml = true;
+
+				var smtpClient = new SmtpClient();
+				smtpClient.UseDefaultCredentials = UseDefaultCredentials;
+				smtpClient.Host = Host;
+				smtpClient.Port = Port;
+				smtpClient.Credentials = new NetworkCredential(email, password);
+				smtpClient.EnableSsl = EnableSsl;
+
+				try
+				{
+					//smtpClient.Send("email", "recipient", "subject", "body");
+					smtpClient.Send(mm);
+				}
+				catch (Exception ex)
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+
+	}
 }

@@ -303,7 +303,22 @@ namespace HiSpaceListingService.Controllers
 		//	EmailMessage email = new EmailMessage();
 		//	return email.SendEnquiry(Enquiry.To_Email, Subject, Enquiry.Sender_Message, Enquiry.Sender_Phone, Enquiry.Sender_Name, Enquiry.Sender_Email);
 		//}
+		//password recovery
+		[HttpGet]
+		[Route("SendPasswordRecoveryEmail/{Email}")]
+		public ActionResult<bool> SendPasswordRecoveryEmail(string Email)
+		{
+			var user = _context.Users.Where(d => d.Email == Email).FirstOrDefault();
 
+			if (user == null)
+			{
+				return false;
+			}
+			var Subject = "Password Recovery";
+			EmailMessage email = new EmailMessage();
+
+			return email.SendPassword(user.Email, Subject, user.CompanyName, user.Password);
+		}
 		//Enquiry
 		[HttpPost]
 		[Route("SendEnquiryEmail")]
