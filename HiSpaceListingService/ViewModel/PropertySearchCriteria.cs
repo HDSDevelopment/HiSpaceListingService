@@ -22,6 +22,12 @@ namespace HiSpaceListingService.ViewModel
 
         public bool? IsPerformHealthCheck { get; set; }
 
+        public bool? IsPerformHour { get; set; }
+
+        public bool? IsPerformDay { get; set; }
+
+        public bool? IsPerformMonth { get; set; }
+
         public bool IsValidCMCW_PropertyFor()
         {
         return CMCW_PropertyFor == "Rental" || CMCW_PropertyFor == "Sale" ? true : false;    
@@ -60,5 +66,17 @@ namespace HiSpaceListingService.ViewModel
         {
 	        return IsPerformHealthCheck != null && IsPerformHealthCheck == true;
         }
-	}
+        public bool IsValidHour()
+        {
+            return IsPerformHour != null && IsPerformHour == true;
+        }
+        public bool IsValidDay()
+        {
+            return IsPerformDay != null && IsPerformDay == true;
+        }
+        public bool IsValidMonth()
+        {
+            return IsPerformMonth != null && IsPerformMonth == true;
+        }
+    }
 }

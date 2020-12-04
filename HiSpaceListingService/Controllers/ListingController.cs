@@ -880,6 +880,21 @@ namespace HiSpaceListingService.Controllers
 									  on prop.ListingId equals healthCheck.ListingId
 									 select prop;
 
+			if (properties != null && searchCriteria.IsValidHour())
+				properties = from prop in properties
+							 where prop.RentalHour == searchCriteria.IsPerformHour
+							 select prop;
+
+			if (properties != null && searchCriteria.IsValidDay())
+				properties = from prop in properties
+							 where prop.RentalDay == searchCriteria.IsPerformDay
+							 select prop;
+
+			if (properties != null && searchCriteria.IsValidMonth())
+				properties = from prop in properties
+							 where prop.RentalMonth == searchCriteria.IsPerformMonth
+							 select prop;
+
 			if (properties == null)
 					 			return BadRequest();
 						 
