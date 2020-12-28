@@ -37,6 +37,7 @@ namespace HiSpaceListingService.Controllers
 									   locality = g.Key,
 									   localCount = g.Count()
 								   })
+								   .OrderBy(d => d.locality)
 							.ToListAsync();
 
 			foreach (var item in locations)
@@ -268,7 +269,7 @@ namespace HiSpaceListingService.Controllers
 							   where user.Status == true
 							   select new { user.UserId, user.CompanyName }
 								)
-								.OrderBy(d => d.UserId)
+								.OrderBy(d => d.CompanyName)
 								.ToListAsync();
 
 			var properties = await (from property in _context.Listings.AsNoTracking()
@@ -299,7 +300,7 @@ namespace HiSpaceListingService.Controllers
 			var users = await (from user in _context.Users.AsNoTracking()
 							   where user.Status == true
 							   select new { user.UserId, user.CompanyName })
-						.OrderBy(d => d.UserId)
+						.OrderBy(d => d.CompanyName)
 						.ToListAsync();
 
 			var listingUserIDs = await (from listing in _context.Listings.AsNoTracking()
@@ -328,7 +329,7 @@ namespace HiSpaceListingService.Controllers
 
 			var users = _context.Users
 									.Where(d => d.Status == true && d.UserType == 1)
-									.OrderBy(d => d.UserId)
+									.OrderBy(d => d.CompanyName)
 									.Select(b => new { b.UserId, b.City, b.CompanyName });
 
 			if (Location != "All")
@@ -351,7 +352,7 @@ namespace HiSpaceListingService.Controllers
 				});
 
 			}
-			return response;
+			return response.OrderBy(d => d.CompanyName).ToList();
 		}
 		//People filter dropdown start
 		// GET: api/Common/GetPeopleListForPeopleFilter/Location
