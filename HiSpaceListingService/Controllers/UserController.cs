@@ -30,9 +30,9 @@ namespace HiSpaceListingService.Controllers
 		// POST: api/user/AuthenticateUser
 		[HttpPost]
 		[Route("AuthenticateUser")]
-		public async Task<ActionResult<User>> AuthenticateUser(    User user)
+		public async Task<ActionResult<User>> AuthenticateUser(User user)
 		{
-			var _user = await _context.Users.FirstOrDefaultAsync(d => d.Email == user.Email && d.Password == user.Password && d.Status == true && d.UserType == user.UserType);
+			var _user = await _context.Users.FirstOrDefaultAsync(d => d.Email == user.Email && d.Password == user.Password && d.Status == true);
 
 			if (_user == null)
 			{
@@ -52,7 +52,7 @@ namespace HiSpaceListingService.Controllers
 				Password = _user.Password,
 				UserType = _user.UserType,
 				CompanyName = _user.CompanyName,
-				UserStatus = _user.UserState
+				UserState = _user.UserState
 			});
 		}
 
@@ -227,6 +227,33 @@ namespace HiSpaceListingService.Controllers
 				if (user != null)
 				{
 					user.Status = Status;
+					_context.Entry(user).State = EntityState.Modified;
+					_context.SaveChangesAsync();
+				}
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				result = false;
+			}
+			return result;
+		}
+
+		//UserType update when list create first time
+		//GET: api/user/UserTypeUpdate/1/1
+		[HttpGet("UserTypeUpdate/{UserId}/{UserType}")]
+		public ActionResult<bool> UserTypeUpdate(int UserId, int UserType)
+		{
+			bool result = true;
+			if (UserId == 0)
+			{
+				result = false;
+			}
+			try
+			{
+				var user = _context.Users.SingleOrDefault(d => d.UserId == UserId);
+				if (user != null)
+				{
+					user.UserType = UserType;
 					_context.Entry(user).State = EntityState.Modified;
 					_context.SaveChangesAsync();
 				}

@@ -54,6 +54,40 @@ namespace HiSpaceListingService.Controllers
 			return response;
 		}
 
+		// GET: api/Common/GetPropertyLocationWithMinimumCountSearch/
+		[HttpGet]
+		[Route("GetPropertyLocationWithMinimumCountSearch")]
+		public async Task<ActionResult<List<PropertyLocationSearchResponse>>> GetPropertyLocationWithMinimumCountSearch()
+		{
+
+			const int minimumNumberOfProperties = 20;
+
+			List<PropertyLocationSearchResponse> response = new List<PropertyLocationSearchResponse>();
+			var locations = await (from r in _context.Listings.AsNoTracking()
+								   where r.ListingType != "RE-Professional" && r.AdminStatus == true && r.Status == true && r.DeletedStatus == false
+								   group r by r.locality into g
+								   where g.Count() > minimumNumberOfProperties
+								   select new
+								   {
+									   locality = g.Key,
+									   localCount = g.Count()
+								   })
+			.ToListAsync();
+
+			foreach (var item in locations)
+			{
+				if (item.locality != null)
+				{
+					response.Add(new PropertyLocationSearchResponse()
+					{
+						locality = item.locality,
+						localityInUseCount = item.localCount
+					});
+				}
+			}
+			return response;
+		}
+
 		// GET: api/Common/GetAllPropertySearchByUserID/UserId
 		//[HttpGet]
 		[Route("GetAllPropertySearchByUserID/{UserID}")]
