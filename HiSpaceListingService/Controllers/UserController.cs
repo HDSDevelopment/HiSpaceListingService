@@ -112,17 +112,37 @@ namespace HiSpaceListingService.Controllers
 		//[HttpGet("GetUser/{UserId}")]
 		[HttpGet]
 		[Route("GetUser/{UserId}")]
-		public async Task<ActionResult<User>> GetUser(int UserId)
+		public async Task<ActionResult<BasicInfoCompletionResponse>> GetUser(int UserId)
 		{
-			var user = await _context.Users.FindAsync(UserId);
+			BasicInfoCompletionResponse completionResponse = new BasicInfoCompletionResponse();
+			completionResponse.User = await _context.Users.FindAsync(UserId);
 
-			if (user == null)
+			if (completionResponse.User == null)
 			{
 				return NotFound();
 			}
-
-			return user;
+			completionResponse.PercentageCompleted = GetCompletionPercentage(completionResponse.User);
+			return completionResponse;
 		}
+
+		///// <summary>
+		///// Add the User.
+		///// </summary>
+		///// <returns>The User by UserId.</returns>
+		//// POST: api/user/AddUser
+		//[HttpPost]
+		//[Route("AddUser")]
+		//public async Task<ActionResult<User>> AddUser([FromBody] User user)
+		//{
+		//	BasicInfoCompletionResponse completionResponse = new BasicInfoCompletionResponse();
+		//	completionResponse.User = user;
+		//	completionResponse.User.CreatedDateTime = DateTime.Now;
+
+		//	_context.Users.Add(user);
+		//	await _context.SaveChangesAsync();
+
+		//	return CreatedAtAction("GetUser", new { UserId = user.UserId});
+		//}
 
 		/// <summary>
 		/// Add the User.
@@ -138,7 +158,28 @@ namespace HiSpaceListingService.Controllers
 			_context.Users.Add(user);
 			await _context.SaveChangesAsync();
 
-			return CreatedAtAction("GetUser", new { UserId = user.UserId }, user);
+			return CreatedAtAction("GetUsersOnly", new { UserId = user.UserId }, user);
+		}
+
+		/// <summary>
+		/// Gets the list of all Users.
+		/// </summary>
+		/// <returns>The list of Users.</returns>
+		// GET: api/user/Users
+		[HttpGet]
+		[Route("GetUsersOnly")]
+		public async Task<ActionResult<IEnumerable<User>>> GetUsersOnly()
+		{
+			try
+			{
+				return await _context.Users.ToListAsync();
+			}
+			catch (Exception ex)
+			{
+
+				throw ex;
+			}
+
 		}
 
 		/// <summary>
@@ -398,6 +439,36 @@ namespace HiSpaceListingService.Controllers
 			EmailMessage email = new EmailMessage();
 			return email.BackgroundCheckEmail(Email, UserName, Subject);
 		}
+
+		//percentage calculation
+		int GetCompletionPercentage(User user)
+		{
+			const int requiredFields = 6;
+
+			int completedFields = requiredFields;
+
+			completedFields = GetCompletedFieldsCount(user.Website, completedFields);
+
+			completedFields = GetCompletedFieldsCount(user.ProofName, completedFields);
+
+			completedFields = GetCompletedFieldsCount(user.ProofNumber, completedFields);
+
+			completedFields = GetCompletedFieldsCount(user.Doc_RCCopy, completedFields);
+
+			completedFields = GetCompletedFieldsCount(user.Doc_CompanyLogo, completedFields);
+
+			const int totalFields = 11;
+
+			int percentageCompleted = (int)((float)completedFields * 100 / totalFields);
+
+			return percentageCompleted;
+		}
+
+		int GetCompletedFieldsCount(string fieldData, int previouscompletedCount)
+		{
+			return !string.IsNullOrEmpty(fieldData) ? ++previouscompletedCount : previouscompletedCount;
+		}
+
 
 
 	}
