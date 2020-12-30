@@ -103,6 +103,7 @@ namespace HiSpaceListingService.Controllers
 				lst.TotalAmenities = _context.Amenitys.Where(d => d.ListingId == item.ListingId).Count();
 				lst.TotalFacilities = _context.Facilitys.Where(d => d.ListingId == item.ListingId).Count();
 				lst.TotalProjects = _context.REProfessionalMasters.Where(d => d.ListingId == item.ListingId).Count();
+				//lst.ListProgress
 
 				listingTable.Add(lst);
 			}

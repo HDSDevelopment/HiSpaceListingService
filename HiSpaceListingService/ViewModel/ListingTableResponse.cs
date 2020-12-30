@@ -22,5 +22,6 @@ namespace HiSpaceListingService.ViewModel
         public int TotalAmenities { get; set; }
         public int TotalFacilities { get; set; }
         public int TotalProjects { get; set; }
+        public int ListProgress { get; set; } = 63;
     }
 }
