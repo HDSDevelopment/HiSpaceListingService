@@ -82,6 +82,240 @@ namespace HiSpaceListingService.Controllers
 		}
 
 		[HttpGet]
+		[Route("GetListingsWithCompletionPercentByUserId/{UserId}")]
+		public async Task<ActionResult<ListingCompletionPercentResponse>> GetListingsWithCompletionPercentByUserId(int UserId)
+		{
+			var listings = await _context.Listings.AsNoTracking()
+								.Where(d => d.UserId == UserId && d.DeletedStatus == false).ToListAsync();
+
+			List<GreenBuildingCheck> GBCs = await (from GBC in _context.GreenBuildingChecks
+													.AsNoTracking()
+												   select GBC)
+											.ToListAsync();
+
+			List<int> healthChecks = await (from hc in _context.HealthChecks
+													   .AsNoTracking()
+											select hc.ListingId)
+													.ToListAsync();
+
+			List<int> workingHours = await (from wh in _context.WorkingHourss
+																.AsNoTracking()
+											select wh.ListingId)
+														.ToListAsync();
+
+			List<int> listingImages = await (from image in _context.ListingImagess
+														.AsNoTracking()
+											 select image.ListingId)
+														.ToListAsync();
+
+			List<int> amenities = await (from amenity in _context.Amenitys.AsNoTracking()
+										 select amenity.ListingId)
+												.ToListAsync();
+
+			List<int> facilities = await (from facility in _context.Facilitys.AsNoTracking()
+										  select facility.ListingId)
+													.ToListAsync();
+
+			List<int> projects = await (from project in _context.REProfessionalMasters
+										.AsNoTracking()
+										select project.ListingId)
+										.ToListAsync();
+
+			ListingCompletionPercentResponse response = new ListingCompletionPercentResponse();
+			response.ListingsWithCompletionPercent = new List<ListingItemCompletionPercentResponse>();
+
+			ListingItemCompletionPercentResponse list;
+
+			int completedFormFieldsCount;
+			int completedDataFieldsCount;
+			int totalCompletedCount;
+
+			int totalDataFields;
+			int totalFormFields;
+			int totalFields;
+
+			foreach (var item in listings)
+			{
+				list = new ListingItemCompletionPercentResponse();
+				list.Listings = new Listing();
+				list.Listings = item;
+
+				string listType = item.ListingType;
+
+				if (listType == "Commercial" || listType == "Co-Working")
+				{
+					totalDataFields = 8;
+					totalFormFields = 16;
+
+					list.GBC = GBCs.SingleOrDefault(d => d.ListingId == item.ListingId);
+
+					list.TotalHealthCheck = healthChecks.Where(d => d == item.ListingId).Count();
+
+					list.TotalGreenBuildingCheck = GBCs.Where(d => d.ListingId == item.ListingId).Count();
+
+					list.TotalAmenities = amenities.Where(d => d == item.ListingId).Count();
+
+					list.TotalFacilities = facilities.Where(d => d == item.ListingId).Count();
+				}
+				else
+				{
+					totalDataFields = 3;
+					totalFormFields = 5;
+				}
+
+				totalFields = totalFormFields + totalDataFields;
+
+				list.TotalWorkingHours = workingHours.Where(d => d == item.ListingId).Count();
+				list.TotalListingImages = listingImages.Where(d => d == item.ListingId).Count();
+				list.TotalProjects = projects.Where(d => d == item.ListingId).Count();
+
+				completedDataFieldsCount = GetCompletedDataFieldsCount(list);
+				completedFormFieldsCount = GetCompletedFormFieldsCount(list);
+				totalCompletedCount = completedDataFieldsCount + completedFormFieldsCount;
+
+				list.PercentCompleted = (int)((float)totalCompletedCount * 100) / (totalFields);
+
+				response.ListingsWithCompletionPercent.Add(list);
+			}
+
+			int numberOfEntries = response.ListingsWithCompletionPercent.Count();
+			int averagePercent = 0;
+
+			if (numberOfEntries != 0)
+			{
+				decimal sumOfPercents = response.ListingsWithCompletionPercent.
+												Sum(n => n.PercentCompleted);
+				averagePercent = (int)(sumOfPercents / numberOfEntries);
+			}
+
+			response.OverallPercentCompleted = averagePercent;
+			return response;
+		}
+
+		int GetCompletedFormFieldsCount(ListingItemCompletionPercentResponse listItem)
+		{
+			int completedCount = 0;
+			int requiredCount = 4;
+
+			if (listItem == null)
+				return completedCount;
+
+			Listing listing = listItem.Listings;
+
+			string listType = listing.ListingType;
+
+			if (listType == "Commercial" || listType == "Co-Working")
+			{
+				completedCount = requiredCount;
+
+				completedCount = GetCompletedFieldsCount(listing.Name, completedCount);
+				completedCount = GetCompletedFieldsCount(listing.CMCW_PropertyFor, completedCount);
+				completedCount = GetCompletedFieldsCount(listing.CMCW_PropertyFor, completedCount);
+				completedCount = GetCompletedFieldsCount(listing.CommercialType, completedCount);
+				completedCount = GetCompletedFieldsCount(listing.CommercialInfraType, completedCount);
+				completedCount = GetCompletedFieldsCount(listing.SpaceSize, completedCount);
+				completedCount = GetCompletedFieldsCount(listing.PriceMin, completedCount);
+				completedCount = GetCompletedFieldsCount(listing.PriceMax, completedCount);
+				completedCount = GetCompletedFieldsCount(listing.SpaceSize, completedCount);
+				completedCount = GetCompletedFieldsCount(listing.BuildYear, completedCount);
+				completedCount = GetCompletedFieldsCount(listing.RecentInnovation, completedCount);
+				completedCount = GetCompletedFieldsCount(listing.CurrentOccupancy, completedCount);
+
+				if (!string.IsNullOrEmpty(listing.CMCW_ReraId) ||
+					!string.IsNullOrEmpty(listing.CMCW_SurveyNumber) ||
+					!string.IsNullOrEmpty(listing.CMCW_PropertyTaxBillNumber) ||
+					!string.IsNullOrEmpty(listing.CMCW_CTSNumber) ||
+					!string.IsNullOrEmpty(listing.CMCW_MilkatNumber) ||
+					!string.IsNullOrEmpty(listing.CMCW_GatNumber) ||
+					!string.IsNullOrEmpty(listing.CMCW_PlotNumber))
+					completedCount++;
+			}
+			else
+			{
+				requiredCount = 3;
+				completedCount = requiredCount;
+			}
+			completedCount = GetCompletedFieldsCount(listing.Description, completedCount);
+
+			if (listing.RE_Warehouse ||
+				listing.RE_Office ||
+				listing.RE_Retail ||
+				listing.RE_Coworking ||
+				listing.RE_PropertyManagement)
+				completedCount++;
+
+			return completedCount;
+		}
+
+		int GetCompletedDataFieldsCount(ListingItemCompletionPercentResponse list)
+		{
+			int completedCount = 0;
+
+			if (list == null)
+				return completedCount;
+
+			string listType = list.Listings.ListingType;
+
+			if (listType == "Commercial" || listType == "Co-Working")
+			{
+
+				if (list.GBC != null)
+					completedCount++;
+
+				completedCount = GetCompletedFieldsCount(list.TotalHealthCheck, completedCount);
+
+				completedCount = GetCompletedFieldsCount(list.TotalGreenBuildingCheck, completedCount);
+
+				completedCount = GetCompletedFieldsCount(list.TotalAmenities, completedCount);
+
+				completedCount = GetCompletedFieldsCount(list.TotalFacilities, completedCount);
+			}
+
+			completedCount = GetCompletedFieldsCount(list.TotalProjects, completedCount);
+
+			completedCount = GetCompletedFieldsCount(list.TotalWorkingHours, completedCount);
+
+			completedCount = GetCompletedFieldsCount(list.TotalListingImages, completedCount);
+
+			return completedCount;
+		}
+
+		int GetCompletedFieldsCount(int fieldData, int previousCount)
+		{
+			return fieldData > 0 ? ++previousCount : previousCount;
+		}
+
+		int GetCompletedFieldsCount(int? fieldData, int previousCount)
+		{
+			if (fieldData != null)
+				return fieldData > 0 ? ++previousCount : previousCount;
+
+			return previousCount;
+		}
+
+		int GetCompletedFieldsCount(decimal? fieldData, int previousCount)
+		{
+			if (fieldData != null)
+				return fieldData > 0 ? ++previousCount : previousCount;
+
+			return previousCount;
+		}
+
+		int GetCompletedFieldsCount(string fieldData, int previousCount)
+		{
+			return !string.IsNullOrEmpty(fieldData) ? ++previousCount : previousCount;
+		}
+
+		int GetCompletedFieldsCount(DateTime? fieldData, int previousCount)
+		{
+			if (fieldData != null)
+				return ++previousCount;
+
+			return previousCount;
+		}
+
+
+		[HttpGet]
 		[Route("GetListingsByUserId/{UserId}")]
 		public async Task<ActionResult<IEnumerable<ListingTableResponse>>> GetListingsByUserId(int UserId)
 		{
