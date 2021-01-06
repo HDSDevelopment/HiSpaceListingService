@@ -26,5 +26,6 @@ namespace HiSpaceListingService.Models
 		public DbSet<HealthCheck> HealthChecks { get; set; }
 		public DbSet<Enquiry> Enquiries { get; set; }
 		//public DbSet<RERoles> RERoless { get; set; }
+		public DbSet<UserListing> UserListings { get; set; }
 	}
 }

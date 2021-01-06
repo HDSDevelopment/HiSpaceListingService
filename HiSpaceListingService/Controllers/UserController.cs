@@ -468,8 +468,5 @@ namespace HiSpaceListingService.Controllers
 		{
 			return !string.IsNullOrEmpty(fieldData) ? ++previouscompletedCount : previouscompletedCount;
 		}
-
-
-
 	}
 }

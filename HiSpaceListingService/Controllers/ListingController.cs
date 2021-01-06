@@ -2210,5 +2210,81 @@ IEnumerable<ListingImages> images = await _context.ListingImagess.ToListAsync();
 				return professionalsResponse;
 			return NotFound();
 		}
+
+		//add bookmarks
+		[Route("AddUserListing")]
+		[HttpPost]
+		public async Task<IActionResult> AddUserListing([FromBody] UserListing userListing)
+		{
+			int userId;
+			bool isUserExists = false;
+
+			int listingId;
+			bool isListingExists = false;
+
+			if (ModelState.IsValid)
+			{
+				try
+				{
+					userId = userListing.UserId;
+					isUserExists = await _context.Users.AsNoTracking()
+										.AnyAsync(u => u.UserId == userId);
+
+					if (!isUserExists)
+						return NotFound(userListing);
+
+					listingId = userListing.ListingId;
+					isListingExists = await _context.Listings.AsNoTracking()
+											.AnyAsync(l => l.ListingId == listingId);
+
+					if (!isListingExists)
+						return NotFound(userListing);
+
+					await _context.UserListings.AddAsync(userListing);
+					int recordsAffected = await _context.SaveChangesAsync();
+
+					if (recordsAffected > 0)
+						return Ok(userListing);
+				}
+				catch (Exception ex)
+				{
+					return StatusCode(StatusCodes.Status500InternalServerError, userListing);
+				}
+			}
+			return BadRequest(userListing);
+		}
+
+		//remove bookmarks
+		[Route("DeleteUserListing")]
+		[HttpPost]
+		public async Task<IActionResult> DeleteUserListing([FromBody] UserListing userListing)
+		{
+			int userListingId;
+			bool isUserListingExists = false;
+
+			if (ModelState.IsValid)
+			{
+				try
+				{
+					userListingId = userListing.Id;
+					isUserListingExists = await _context.UserListings.AsNoTracking()
+													.AnyAsync(u => u.Id == userListingId);
+
+					if (!isUserListingExists)
+						return NotFound(userListingId);
+
+					_context.UserListings.Remove(userListing);
+					int recordsAffected = await _context.SaveChangesAsync();
+
+					if (recordsAffected > 0)
+						return Ok();
+				}
+				catch (Exception ex)
+				{
+					return StatusCode(StatusCodes.Status500InternalServerError);
+				}
+			}
+			return BadRequest();
+		}
 	}
 }
