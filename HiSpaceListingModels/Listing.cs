@@ -89,5 +89,10 @@ namespace HiSpaceListingModels
 		public decimal? CMCW_AproximatePrice { set; get; }
 		public bool AdminStatus { set; get; }
 		public bool DeletedStatus { set; get; }
+
+		[NotMapped]
+		public bool IsFavorite { get; set; } = false;
+		[NotMapped]
+		public int? FavoriteId { get; set; } = null;
 	}
 }

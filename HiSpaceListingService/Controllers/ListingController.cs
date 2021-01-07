@@ -1057,172 +1057,6 @@ namespace HiSpaceListingService.Controllers
 			return NotFound();
 		}
 
-		//GetPropertyListCommercialAndCoworking/searchCriteria?ListingType=&CMCW_PropertyFor= 
-		[Route("GetPropertyListCommercialAndCoworking")]
-		[HttpPost]
-		public async Task<ActionResult<List<PropertyDetailResponse>>> GetPropertyListCommercialAndCoworking([FromBody] PropertySearchCriteria searchCriteria)
-		{
-			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
-			IEnumerable<Listing> properties = await _context.Listings.Where(m => m.Status == true && m.AdminStatus == true && m.ListingType != "RE-Professional" && m.DeletedStatus == false).ToListAsync();
-			IEnumerable<HealthCheck> healthChecks = await _context.HealthChecks.ToListAsync();
-			IEnumerable<GreenBuildingCheck> greenBldingChecks = await _context.GreenBuildingChecks.ToListAsync();
-
-			if (searchCriteria.IsValidListingType())
-				properties = from prop in properties
-								where prop.ListingType == searchCriteria.ListingType
-								orderby prop.CreatedDateTime descending
-								select prop;
-
-            if (properties != null && searchCriteria.IsValidCMCW_PropertyFor())
-                properties = from prop in properties
-							where prop.CMCW_PropertyFor == searchCriteria.CMCW_PropertyFor
-							select prop;
-                												
-
-            if (properties != null && searchCriteria.IsValidCoworkingType())
-                properties = from prop in properties
-							where prop.CoworkingType == searchCriteria.CoworkingType
-							select prop;
-
-			if (properties != null && searchCriteria.IsValidCommercialType())
-            	properties = from prop in properties
-							where prop.CommercialType == searchCriteria.CommercialType
-							select prop;																				
-
-            if (properties != null && !string.IsNullOrEmpty(searchCriteria.Locality))
-                properties = from prop in properties
-							where prop.locality == searchCriteria.Locality
-							select prop;
-
-			if (properties != null && searchCriteria.IsValidPriceMin())
-                properties = from prop in properties
-							where prop.PriceMin >= searchCriteria.PriceMin
-							select prop;
-
-			if (properties != null && searchCriteria.IsValidPriceMax())
-                properties = from prop in properties
-							where prop.PriceMax <= searchCriteria.PriceMax
-							select prop;
-
-			if (properties != null && searchCriteria.IsValidPerformGBC())
-				properties = from prop in properties
-									 join GBC in greenBldingChecks
-									  on prop.ListingId equals GBC.ListingId
-									 select prop;
-
-			if (properties != null && searchCriteria.IsValidPerformHealthCheck())
-				properties = from prop in properties
-									 join healthCheck in healthChecks
-									  on prop.ListingId equals healthCheck.ListingId
-									 select prop;
-
-			if (properties != null && searchCriteria.IsValidHour())
-				properties = from prop in properties
-							 where prop.RentalHour == searchCriteria.IsPerformHour
-							 select prop;
-
-			if (properties != null && searchCriteria.IsValidDay())
-				properties = from prop in properties
-							 where prop.RentalDay == searchCriteria.IsPerformDay
-							 select prop;
-
-			if (properties != null && searchCriteria.IsValidMonth())
-				properties = from prop in properties
-							 where prop.RentalMonth == searchCriteria.IsPerformMonth
-							 select prop;
-
-			if (properties == null)
-					 			return BadRequest();
-						 
-			foreach (var item in properties)
-			{
-			PropertyDetailResponse property = new PropertyDetailResponse();
-			property.SpaceListing = item;
-		property.SpaceUser = await _context.Users.SingleOrDefaultAsync(d => d.UserId == item.UserId);
-				
-		List<Amenity> amenities = await _context.Amenitys.ToListAsync();			 
-		property.AvailableAmenities = (from amenity in amenities
-								where amenity.ListingId == item.ListingId && amenity.Status == true 
-								select amenity)
-								.Count();
-
-		List<Facility> facilities = await _context.Facilitys.ToListAsync();
-		property.AvailableFacilities = (from facility in facilities 
-								where facility.ListingId == item.ListingId && facility.Status == true 
-								select facility)
-								.Count();
-		
-IEnumerable<REProfessionalMaster> professionals = await _context.REProfessionalMasters.ToListAsync();	
-	property.AvailableProjects = (from professional in professionals
-						where professional.ListingId == item.ListingId && professional.Status == true 
-						select professional)					
-						.Count();
-	
-IEnumerable<ListingImages> images = await _context.ListingImagess.ToListAsync();
-	property.ListingImagesList = (from image in images
-								where image.ListingId == item.ListingId
-								select image)
-								.ToList();
-			
-	property.AvailableHealthCheck = (from healthCheck in healthChecks 
-						where healthCheck.ListingId == item.ListingId && healthCheck.Status == true 
-						select healthCheck).Count();
-
-	property.AvailableGreenBuildingCheck = (from GBC in greenBldingChecks 
-										where GBC.ListingId == item.ListingId && GBC.Status == true 
-										select GBC).Count();
-
-													//geting linked re-prof			
-		var linkedREProf = (from r in _context.REProfessionalMasters
-							where (
-							(((r.PropertyReraId != null && item.CMCW_ReraId != null) && (r.PropertyReraId == item.CMCW_ReraId))
-								 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_CTSNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_CTSNumber))
-								 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_MilkatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_MilkatNumber))
-								 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_PlotNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_PlotNumber))
-								 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_SurveyNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_SurveyNumber))
-								 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_PropertyTaxBillNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_PropertyTaxBillNumber))
-								 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_GatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_GatNumber)))
-								 && (r.LinkingStatus == "Approved") && (r.DeletedStatus == false))
-								select new
-								{
-									item.ListingId,
-									r.REProfessionalMasterId,
-									item.UserId,
-									r.ProjectRole,
-									r.ProjectName,
-									r.ImageUrl,
-									r.OperatorName,
-									r.LinkingStatus
-								}).ToList();								
-
-				property.LinkedREProf = new List<LinkedREPRofessionals>();
-				foreach (var linked in linkedREProf)
-				{
-					LinkedREPRofessionals REProf = new LinkedREPRofessionals();
-					var GetListingIdOnReProfessional = _context.REProfessionalMasters.Where(d => d.REProfessionalMasterId == linked.REProfessionalMasterId).Select(d => d.ListingId).First();
-					REProf.Property_ListingId = linked.ListingId;
-					REProf.ReProfessional_ListingId = GetListingIdOnReProfessional;
-					REProf.REProfessionalMasterId = linked.REProfessionalMasterId;
-					REProf.UserId = linked.UserId;
-					REProf.ProjectRole = linked.ProjectRole;
-					REProf.OperatorName = linked.OperatorName;
-					REProf.LinkingStatus = linked.LinkingStatus;
-					REProf.ProjectName = linked.ProjectName;
-					REProf.ImageUrl = linked.ImageUrl;
-					REProf.REFirstName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_FirstName).First();
-					REProf.RELastName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_LastName).First();
-					property.LinkedREProf.Add(REProf);
-				}
-
-				property.LinkedREProfCount = property.LinkedREProf.Count;
-				vModel.Add(property);
-			}
-			if(vModel.Count > 0)
-			return vModel;
-
-			return NotFound();
-		}
-
 		[Route("GetAllOperatorList")]
 		[HttpGet]
 		public async Task<ActionResult<List<PropertyOperatorResponse>>> GetAllOperatorList()
@@ -1822,7 +1656,7 @@ IEnumerable<ListingImages> images = await _context.ListingImagess.ToListAsync();
 		//GET: api/Listing/GetLatestPropertiesCommercialAndCoworking
 		[Route("GetLatestPropertiesCommercialAndCoworking")]
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetLatestPropertiesCommercialAndCoworking()
+		public async Task<ActionResult> GetLatestPropertiesCommercialAndCoworking()
 		{
 			const int count = 10;
 
@@ -1955,7 +1789,282 @@ IEnumerable<ListingImages> images = await _context.ListingImagess.ToListAsync();
 				vModel.Add(property);
 			}
 			if (vModel.Count > 0)
-				return vModel;
+				return Ok(vModel);
+
+			return NotFound();
+		}
+
+		//GetPropertyListCommercialAndCoworking/searchCriteria?ListingType=&CMCW_PropertyFor= 
+		[Route("GetPropertyListCommercialAndCoworking")]
+		[HttpPost]
+		public async Task<ActionResult> GetPropertyListCommercialAndCoworking([FromBody] PropertySearchCriteria searchCriteria)
+		{
+			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
+			IEnumerable<Listing> properties = await _context.Listings.Where(m => m.Status == true && m.AdminStatus == true && m.ListingType != "RE-Professional" && m.DeletedStatus == false).ToListAsync();
+			IEnumerable<HealthCheck> healthChecks = await _context.HealthChecks.ToListAsync();
+			IEnumerable<GreenBuildingCheck> greenBldingChecks = await _context.GreenBuildingChecks.ToListAsync();
+
+			if (searchCriteria.IsValidListingType())
+				properties = from prop in properties
+							 where prop.ListingType == searchCriteria.ListingType
+							 orderby prop.CreatedDateTime descending
+							 select prop;
+
+			if (properties != null && searchCriteria.IsValidCMCW_PropertyFor())
+				properties = from prop in properties
+							 where prop.CMCW_PropertyFor == searchCriteria.CMCW_PropertyFor
+							 select prop;
+
+
+			if (properties != null && searchCriteria.IsValidCoworkingType())
+				properties = from prop in properties
+							 where prop.CoworkingType == searchCriteria.CoworkingType
+							 select prop;
+
+			if (properties != null && searchCriteria.IsValidCommercialType())
+				properties = from prop in properties
+							 where prop.CommercialType == searchCriteria.CommercialType
+							 select prop;
+
+			if (properties != null && !string.IsNullOrEmpty(searchCriteria.Locality))
+				properties = from prop in properties
+							 where prop.locality == searchCriteria.Locality
+							 select prop;
+
+			if (properties != null && searchCriteria.IsValidPriceMin())
+				properties = from prop in properties
+							 where prop.PriceMin >= searchCriteria.PriceMin
+							 select prop;
+
+			if (properties != null && searchCriteria.IsValidPriceMax())
+				properties = from prop in properties
+							 where prop.PriceMax <= searchCriteria.PriceMax
+							 select prop;
+
+			if (properties != null && searchCriteria.IsValidPerformGBC())
+				properties = from prop in properties
+							 join GBC in greenBldingChecks
+							  on prop.ListingId equals GBC.ListingId
+							 select prop;
+
+			if (properties != null && searchCriteria.IsValidPerformHealthCheck())
+				properties = from prop in properties
+							 join healthCheck in healthChecks
+							  on prop.ListingId equals healthCheck.ListingId
+							 select prop;
+
+			if (properties != null && searchCriteria.IsValidHour())
+				properties = from prop in properties
+							 where prop.RentalHour == searchCriteria.IsPerformHour
+							 select prop;
+
+			if (properties != null && searchCriteria.IsValidDay())
+				properties = from prop in properties
+							 where prop.RentalDay == searchCriteria.IsPerformDay
+							 select prop;
+
+			if (properties != null && searchCriteria.IsValidMonth())
+				properties = from prop in properties
+							 where prop.RentalMonth == searchCriteria.IsPerformMonth
+							 select prop;
+
+			if (properties == null)
+				return BadRequest();
+
+			foreach (var item in properties)
+			{
+				PropertyDetailResponse property = new PropertyDetailResponse();
+				property.SpaceListing = item;
+				property.SpaceUser = await _context.Users.SingleOrDefaultAsync(d => d.UserId == item.UserId);
+
+				List<Amenity> amenities = await _context.Amenitys.ToListAsync();
+				property.AvailableAmenities = (from amenity in amenities
+											   where amenity.ListingId == item.ListingId && amenity.Status == true
+											   select amenity)
+										.Count();
+
+				List<Facility> facilities = await _context.Facilitys.ToListAsync();
+				property.AvailableFacilities = (from facility in facilities
+												where facility.ListingId == item.ListingId && facility.Status == true
+												select facility)
+										.Count();
+
+				IEnumerable<REProfessionalMaster> professionals = await _context.REProfessionalMasters.ToListAsync();
+				property.AvailableProjects = (from professional in professionals
+											  where professional.ListingId == item.ListingId && professional.Status == true
+											  select professional)
+									.Count();
+
+				IEnumerable<ListingImages> images = await _context.ListingImagess.ToListAsync();
+				property.ListingImagesList = (from image in images
+											  where image.ListingId == item.ListingId
+											  select image)
+											.ToList();
+
+				property.AvailableHealthCheck = (from healthCheck in healthChecks
+												 where healthCheck.ListingId == item.ListingId && healthCheck.Status == true
+												 select healthCheck).Count();
+
+				property.AvailableGreenBuildingCheck = (from GBC in greenBldingChecks
+														where GBC.ListingId == item.ListingId && GBC.Status == true
+														select GBC).Count();
+
+				//geting linked re-prof			
+				var linkedREProf = (from r in _context.REProfessionalMasters
+									where (
+									(((r.PropertyReraId != null && item.CMCW_ReraId != null) && (r.PropertyReraId == item.CMCW_ReraId))
+										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_CTSNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_CTSNumber))
+										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_MilkatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_MilkatNumber))
+										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_PlotNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_PlotNumber))
+										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_SurveyNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_SurveyNumber))
+										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_PropertyTaxBillNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_PropertyTaxBillNumber))
+										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_GatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_GatNumber)))
+										 && (r.LinkingStatus == "Approved") && (r.DeletedStatus == false))
+									select new
+									{
+										item.ListingId,
+										r.REProfessionalMasterId,
+										item.UserId,
+										r.ProjectRole,
+										r.ProjectName,
+										r.ImageUrl,
+										r.OperatorName,
+										r.LinkingStatus
+									}).ToList();
+
+				property.LinkedREProf = new List<LinkedREPRofessionals>();
+				foreach (var linked in linkedREProf)
+				{
+					LinkedREPRofessionals REProf = new LinkedREPRofessionals();
+					var GetListingIdOnReProfessional = _context.REProfessionalMasters.Where(d => d.REProfessionalMasterId == linked.REProfessionalMasterId).Select(d => d.ListingId).First();
+					REProf.Property_ListingId = linked.ListingId;
+					REProf.ReProfessional_ListingId = GetListingIdOnReProfessional;
+					REProf.REProfessionalMasterId = linked.REProfessionalMasterId;
+					REProf.UserId = linked.UserId;
+					REProf.ProjectRole = linked.ProjectRole;
+					REProf.OperatorName = linked.OperatorName;
+					REProf.LinkingStatus = linked.LinkingStatus;
+					REProf.ProjectName = linked.ProjectName;
+					REProf.ImageUrl = linked.ImageUrl;
+					REProf.REFirstName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_FirstName).First();
+					REProf.RELastName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_LastName).First();
+					property.LinkedREProf.Add(REProf);
+				}
+
+				property.LinkedREProfCount = property.LinkedREProf.Count;
+				vModel.Add(property);
+			}
+			if (vModel.Count > 0)
+				return Ok(vModel);
+
+			return NotFound();
+		}
+
+		//GET: api/Listing/GetPropertiesCommercialAndCoworkingWithFavoritesByUserId/347
+		[Route("GetPropertiesCommercialAndCoworkingWithFavoritesByUserId/{userId}")]
+		[HttpGet]
+		public async Task<ActionResult> GetPropertiesCommercialAndCoworkingWithFavoritesByUserId(int userId)
+		{
+			try
+            {
+                ActionResult actionResult = await GetLatestPropertiesCommercialAndCoworking();
+				List<UserListing> userListings = await (from userListing in _context.UserListings
+														where userListing.UserId == userId
+														select userListing).ToListAsync();
+
+				Listing spaceListing = null;
+
+				if (actionResult is OkObjectResult objectResult)
+				{
+					ObjectResult result = (ObjectResult)actionResult;
+					List<PropertyDetailResponse> response = (List<PropertyDetailResponse>)result.Value;
+
+					foreach (UserListing userListing in userListings)
+					{
+						spaceListing = (from property in response
+										where property.SpaceListing != null &&
+										property.SpaceListing.ListingId == userListing.ListingId
+										select property.SpaceListing).SingleOrDefault();
+						if (spaceListing != null)
+						{
+							spaceListing.IsFavorite = true;
+							spaceListing.FavoriteId = userListing.Id;
+						}
+					}
+					return Ok(response);
+				}
+			}
+			catch (Exception ex)
+			{
+				StatusCode(StatusCodes.Status500InternalServerError);
+			}
+
+			return NotFound();
+		}
+
+		//GET: api/Listing/GetPropertiesCommercialAndCoworking
+		[Route("GetPropertiesCommercialAndCoworkingWithFavorites")]
+		[HttpGet]
+		public async Task<ActionResult> GetPropertiesCommercialAndCoworkingWithFavorites()
+		{
+			try
+			{
+				ActionResult actionResult = await GetLatestPropertiesCommercialAndCoworking();
+
+				if (actionResult is OkObjectResult objectResult)
+				{
+					ObjectResult result = (ObjectResult)actionResult;
+					List<PropertyDetailResponse> response = (List<PropertyDetailResponse>)result.Value;
+					return Ok(response);
+				}
+			}
+			catch (Exception ex)
+			{
+				StatusCode(StatusCodes.Status500InternalServerError);
+			}
+
+			return NotFound();
+		}
+
+		//GET: api/Listing/GetPropertiesCommercialAndCoworkingWithFavoritesBySearch/
+		[Route("GetPropertiesCommercialAndCoworkingWithFavoritesBySearch")]
+		[HttpPost]
+		public async Task<ActionResult> GetPropertiesCommercialAndCoworkingWithFavoritesBySearch([FromBody] PropertyUserSearchCriteria criteria)
+		{
+			try
+			{
+				ActionResult actionResult = await GetPropertyListCommercialAndCoworking(criteria);
+
+				List<UserListing> userListings = await (from userListing in _context.UserListings
+														where userListing.UserId == criteria.UserId
+														select userListing).ToListAsync();
+
+				Listing spaceListing = null;
+
+				if (actionResult is OkObjectResult objectResult)
+				{
+					ObjectResult result = (ObjectResult)actionResult;
+					List<PropertyDetailResponse> response = (List<PropertyDetailResponse>)result.Value;
+
+					foreach (UserListing userListing in userListings)
+					{
+						spaceListing = (from property in response
+										where property.SpaceListing != null &&
+										property.SpaceListing.ListingId == userListing.ListingId
+										select property.SpaceListing).SingleOrDefault();
+						if (spaceListing != null)
+						{
+							spaceListing.IsFavorite = true;
+							spaceListing.FavoriteId = userListing.Id;
+						}
+					}
+					return Ok(response);
+				}
+			}
+			catch (Exception ex)
+			{
+				StatusCode(StatusCodes.Status500InternalServerError);
+			}
 
 			return NotFound();
 		}
@@ -2286,5 +2395,6 @@ IEnumerable<ListingImages> images = await _context.ListingImagess.ToListAsync();
 			}
 			return BadRequest();
 		}
+
 	}
 }
