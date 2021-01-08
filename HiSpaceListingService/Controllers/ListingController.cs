@@ -1504,7 +1504,7 @@ namespace HiSpaceListingService.Controllers
 
 		[Route("GetPeopleList")]
 		[HttpPost]
-		public async Task<ActionResult<List<PropertyPeopleResponse>>> GetPeopleList([FromBody] PeopleSearchCriteria searchCriteria)
+		public async Task<ActionResult> GetPeopleList([FromBody] PeopleSearchCriteria searchCriteria)
 		{
 					IEnumerable<Listing> listings = await _context.Listings.ToListAsync();
 					IEnumerable<User> operators = await _context.Users.ToListAsync();
@@ -1641,8 +1641,8 @@ namespace HiSpaceListingService.Controllers
 			}
 
 			if(professionalsResponse.Count > 0)
-				return professionalsResponse;
-					return NotFound();
+				return Ok(professionalsResponse);
+			return NotFound();
 		}
 
 
@@ -2002,6 +2002,48 @@ namespace HiSpaceListingService.Controllers
 			return NotFound();
 		}
 
+		//GET: api/Listing/GetPeopleWithFavoritesByUserId/347
+		[Route("GetPeopleWithFavoritesByUserId/{userId}")]
+		[HttpGet]
+		public async Task<ActionResult> GetPeopleWithFavoritesByUserId(int userId)
+		{
+			try
+			{
+				ActionResult actionResult = await GetLatestPeopleList();
+				List<UserListing> userListings = await (from userListing in _context.UserListings
+														where userListing.UserId == userId
+														select userListing).ToListAsync();
+
+				Listing spaceListing = null;
+
+				if (actionResult is OkObjectResult objectResult)
+				{
+					ObjectResult result = (ObjectResult)actionResult;
+					List<PropertyPeopleResponse> response = (List<PropertyPeopleResponse>)result.Value;
+
+					foreach (UserListing userListing in userListings)
+					{
+						spaceListing = (from property in response
+										where property.Listing != null &&
+										property.Listing.ListingId == userListing.ListingId
+										select property.Listing).SingleOrDefault();
+						if (spaceListing != null)
+						{
+							spaceListing.IsFavorite = true;
+							spaceListing.FavoriteId = userListing.Id;
+						}
+					}
+					return Ok(response);
+				}
+			}
+			catch (Exception ex)
+			{
+				StatusCode(StatusCodes.Status500InternalServerError);
+			}
+
+			return NotFound();
+		}
+
 		//GET: api/Listing/GetPropertiesCommercialAndCoworking
 		[Route("GetPropertiesCommercialAndCoworkingWithFavorites")]
 		[HttpGet]
@@ -2052,6 +2094,49 @@ namespace HiSpaceListingService.Controllers
 										where property.SpaceListing != null &&
 										property.SpaceListing.ListingId == userListing.ListingId
 										select property.SpaceListing).SingleOrDefault();
+						if (spaceListing != null)
+						{
+							spaceListing.IsFavorite = true;
+							spaceListing.FavoriteId = userListing.Id;
+						}
+					}
+					return Ok(response);
+				}
+			}
+			catch (Exception ex)
+			{
+				StatusCode(StatusCodes.Status500InternalServerError);
+			}
+
+			return NotFound();
+		}
+
+		//GET: api/Listing/GetPeopleWithFavoritesBySearch/1
+		[Route("GetPeopleWithFavoritesBySearch/{UserId}")]
+		[HttpPost]
+		public async Task<ActionResult> GetPeopleWithFavoritesBySearch(int UserId, [FromBody] PeopleSearchCriteria criteria)
+		{
+			try
+			{
+				ActionResult actionResult = await GetPeopleList(criteria);
+
+				List<UserListing> userListings = await (from userListing in _context.UserListings
+														where userListing.UserId == UserId
+														select userListing).ToListAsync();
+
+				Listing spaceListing = null;
+
+				if (actionResult is OkObjectResult objectResult)
+				{
+					ObjectResult result = (ObjectResult)actionResult;
+					List<PropertyPeopleResponse> response = (List<PropertyPeopleResponse>)result.Value;
+
+					foreach (UserListing userListing in userListings)
+					{
+						spaceListing = (from property in response
+										where property.Listing != null &&
+										property.Listing.ListingId == userListing.ListingId
+										select property.Listing).SingleOrDefault();
 						if (spaceListing != null)
 						{
 							spaceListing.IsFavorite = true;
@@ -2203,7 +2288,7 @@ namespace HiSpaceListingService.Controllers
 		//GET: api/Listing/GetLatestPeopleList
 		[Route("GetLatestPeopleList")]
 		[HttpGet]
-		public async Task<ActionResult<List<PropertyPeopleResponse>>> GetLatestPeopleList()
+		public async Task<ActionResult> GetLatestPeopleList()
 		{
 			int count = 10;
 			IEnumerable<Listing> listings = await _context.Listings.ToListAsync();
@@ -2316,7 +2401,7 @@ namespace HiSpaceListingService.Controllers
 			}
 
 			if (professionalsResponse.Count > 0)
-				return professionalsResponse;
+				return Ok(professionalsResponse);
 			return NotFound();
 		}
 
