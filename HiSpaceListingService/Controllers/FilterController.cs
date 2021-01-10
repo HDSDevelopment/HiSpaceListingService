@@ -676,5 +676,90 @@ namespace HiSpaceListingService.Controllers
 
 		}
 
+
+		/// <summary>
+		/// Get property and professionals list by user
+		/// </summary>
+		/// <returns>The list of favorite Properties and professionals by its user.</returns>
+		// GET: api/Listing/GetFavoritesByUser
+		[HttpGet("GetFavoritesByUser/{User}")]
+		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetFavoritesByUser(int User)
+		{
+			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
+			List<Listing> propertiesAndProfessionals = await _context.Listings.Where(m => m.Status == true && m.AdminStatus == true && m.DeletedStatus == false).OrderByDescending(d => d.CreatedDateTime).ToListAsync();
+
+			if (propertiesAndProfessionals.Count() == 0)
+				return NotFound();
+
+			List<UserListing> userListings = await (from userListing in _context.UserListings
+													where userListing.UserId == User
+													select userListing).ToListAsync();
+
+			propertiesAndProfessionals = propertiesAndProfessionals
+																	.Join(userListings, p => p.ListingId, u => u.ListingId, (p, u) =>
+																	{
+																		p.IsFavorite = true;
+																		p.FavoriteId = u.Id;
+																		return p;
+																	}).ToList();
+
+			List<User> users = await _context.Users.AsNoTracking().ToListAsync();
+			List<Amenity> amenities = await _context.Amenitys.AsNoTracking().ToListAsync();
+			List<Facility> facilities = await _context.Facilitys.AsNoTracking().ToListAsync();
+			IEnumerable<REProfessionalMaster> projects = await _context.REProfessionalMasters.AsNoTracking().ToListAsync();
+			IEnumerable<ListingImages> images = await _context.ListingImagess.AsNoTracking().ToListAsync();
+			IEnumerable<HealthCheck> healthChecks = await _context.HealthChecks.AsNoTracking().ToListAsync();
+			IEnumerable<GreenBuildingCheck> greenBldingChecks = await _context.GreenBuildingChecks
+																																	.AsNoTracking().ToListAsync();
+
+			PropertyDetailResponse propertyAndProfessional;
+
+			foreach (var item in propertiesAndProfessionals)
+			{
+				propertyAndProfessional = new PropertyDetailResponse();
+				propertyAndProfessional.SpaceListing = item;
+				propertyAndProfessional.SpaceUser = users.SingleOrDefault(d => d.UserId == item.UserId);
+
+				propertyAndProfessional.AvailableAmenities = (from amenity in amenities
+															  where amenity.ListingId == item.ListingId && amenity.Status == true
+															  select amenity)
+										.Count();
+
+				propertyAndProfessional.AvailableFacilities = (from facility in facilities
+															   where facility.ListingId == item.ListingId && facility.Status == true
+															   select facility)
+										.Count();
+
+				propertyAndProfessional.AvailableProjects = (from project in projects
+															 where project.ListingId == item.ListingId && project.Status == true
+															 select project)
+									.Count();
+
+				propertyAndProfessional.ListingImagesList = (from image in images
+															 where image.ListingId == item.ListingId
+															 select image)
+											.ToList();
+
+				propertyAndProfessional.AvailableHealthCheck = (from healthCheck in healthChecks
+																where healthCheck.ListingId == item.ListingId && healthCheck.Status == true
+																select healthCheck).Count();
+
+				propertyAndProfessional.AvailableGreenBuildingCheck = (from GBC in greenBldingChecks
+																	   where GBC.ListingId == item.ListingId && GBC.Status == true
+																	   select GBC)
+													.Count();
+
+				//geting linked re-prof
+				propertyAndProfessional.LinkedREProf = null;
+
+				propertyAndProfessional.LinkedREProfCount = 0;
+				vModel.Add(propertyAndProfessional);
+			}
+			if (vModel.Count > 0)
+				return Ok(vModel);
+
+			return NotFound();
+		}
+
 	}
 }

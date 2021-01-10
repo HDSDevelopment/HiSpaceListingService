@@ -4,6 +4,7 @@ namespace HiSpaceListingService.ViewModel
 {
     public class PropertySearchCriteria
     {
+        public int Id { get; set; }
         public string ListingType { get; set; }
 
         public string CMCW_PropertyFor { get; set; }
