@@ -32,10 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HiSpaceListingModels\HiSpaceListingModels.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Contracts\" />
   </ItemGroup>
 
