@@ -87,16 +87,23 @@ namespace HiSpaceListingService.Controllers
 		public async Task<ActionResult<IEnumerable<AdminUserListResponse>>> GetUsersAndPropertyCount()
 		{
 			List<AdminUserListResponse> userList = new List<AdminUserListResponse>();
-			var user = await _context.Users.ToListAsync();
+			List<User> users = await _context.Users.AsNoTracking().ToListAsync();
 
-			foreach (var item in user)
+			List<Listing> activelistings = await (from listing in _context.Listings.AsNoTracking()
+												  where listing.DeletedStatus == false
+												  select listing)
+												.ToListAsync();
+
+			AdminUserListResponse lst;
+
+			foreach (var item in users)
 			{
-				AdminUserListResponse lst = new AdminUserListResponse();
+				lst = new AdminUserListResponse();
 
 				lst.User = new User();
 				lst.User = item;
-				lst.TotalProperties = _context.Listings.Where(d => d.UserId == item.UserId && d.DeletedStatus == false).Count();
-
+				lst.TotalProperties = activelistings.Where(d => d.UserId == item.UserId)
+										.Count();
 				userList.Add(lst);
 			}
 
@@ -235,7 +242,6 @@ namespace HiSpaceListingService.Controllers
 		{
 			return _context.Users.Any(e => e.UserId == UserId);
 		}
-
 
 		/// <summary>
 		/// Delete the User by UserId.

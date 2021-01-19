@@ -92,6 +92,7 @@ namespace HiSpaceListingService.Controllers
 			return MaxValue;
 
 		}
+
 		/// <summary>
 		/// </summary>
 		/// <returns>The list of Properties by its location.</returns>
@@ -675,7 +676,6 @@ namespace HiSpaceListingService.Controllers
 			return NotFound();
 
 		}
-
 
 		/// <summary>
 		/// Get property and professionals list by user
