@@ -23,8 +23,6 @@ namespace HiSpaceListingService.Utilities
 		//int Port = 465;
 		string email = "no-reply@highbrowdiligence.com";
 		string password = "ForWeb@HDS123";
-		//string email = "tamilarasan@highbrowdiligence.com";
-		//string password = "HDStamil@72";
 
 		//enquiry
 		public bool SendEnquiry(string ToEmail, string Subject, string Message, string Phone, string Name, string Email)
@@ -114,10 +112,12 @@ namespace HiSpaceListingService.Utilities
 		public bool SendContactFormEnquiry(string Name, string Email, string Phone, string Text, string Subject)
 		{
 			//using (MailMessage mm = new MailMessage(email, "support@highbrowdiligence.com"))
-			using (MailMessage mm = new MailMessage(email, "tamilarasan@highbrowdiligence.com"))
+			using (MailMessage mm = new MailMessage())
 			{
 				mm.From = new MailAddress(email, "HiSpace Team");
-				mm.Subject = Subject;
+                mm.To.Add(new MailAddress("tamilarasan@highbrowdiligence.com"));
+                mm.To.Add(new MailAddress("support@highbrowdiligence.com"));
+                mm.Subject = Subject;
 				mm.Body = "<div style='background: #2ecc71;padding: 50px 30px 15px 30px;'>"
 					+ "<div style='width:75%; margin: 0 auto;padding: 30px;background: #fff;font-size: 14px;color: #505050;'>"
 
@@ -476,13 +476,15 @@ namespace HiSpaceListingService.Utilities
 			return true;
 		}
 
-
         //Investor details
         public bool SendInvestorDetails(Investor investor)
         {
-            using (MailMessage mm = new MailMessage(email, "tamilarasan@highbrowdiligence.com"))
+            //using (MailMessage mm = new MailMessage(email, "tamilarasan@highbrowdiligence.com"))
+            using (MailMessage mm = new MailMessage())
             {
                 mm.From = new MailAddress(email, "HiSpace Team");
+                mm.To.Add(new MailAddress("tamilarasan@highbrowdiligence.com"));
+                mm.To.Add(new MailAddress("support@highbrowdiligence.com"));
                 mm.Subject = "Investor Details";
                 mm.Body = "<div style='background: #2ecc71;padding: 50px 30px 15px 30px;'>"
                    + "<div style='width:75%; margin: 0 auto;padding: 30px;background: #fff;font-size: 14px;color: #505050;'>"
@@ -615,7 +617,7 @@ namespace HiSpaceListingService.Utilities
         //Investor success
         public bool SendInvestorSuccess(string FirstName, string LastName, string InvestorEmail)
         {
-            using (MailMessage mm = new MailMessage(email, "tamilcbharath@gmail.com"))
+            using (MailMessage mm = new MailMessage(email, InvestorEmail))
             {
                 mm.From = new MailAddress(email, "HiSpace Team");
                 mm.Subject = "Success";
