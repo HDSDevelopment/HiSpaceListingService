@@ -2,6 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HiSpaceListingModels;
+using HiSpaceListingService.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using HiSpaceListingService.Utilities;
+using HiSpaceListingService.ViewModel;
 using System.Net.Mail;
 using System.Net;
 
@@ -13,8 +20,11 @@ namespace HiSpaceListingService.Utilities
         bool EnableSsl = true;
         bool UseDefaultCredentials = false;
         int Port = 587;
+		//int Port = 465;
 		string email = "no-reply@highbrowdiligence.com";
 		string password = "ForWeb@HDS123";
+		//string email = "tamilarasan@highbrowdiligence.com";
+		//string password = "HDStamil@72";
 
 		//enquiry
 		public bool SendEnquiry(string ToEmail, string Subject, string Message, string Phone, string Name, string Email)
@@ -467,5 +477,204 @@ namespace HiSpaceListingService.Utilities
 		}
 
 
-	}
+        //Investor details
+        public bool SendInvestorDetails(Investor investor)
+        {
+            using (MailMessage mm = new MailMessage(email, "tamilarasan@highbrowdiligence.com"))
+            {
+                mm.From = new MailAddress(email, "HiSpace Team");
+                mm.Subject = "Investor Details";
+                mm.Body = "<div style='background: #2ecc71;padding: 50px 30px 15px 30px;'>"
+                   + "<div style='width:75%; margin: 0 auto;padding: 30px;background: #fff;font-size: 14px;color: #505050;'>"
+
+                   + "<div style='text-align:center;background:#fbe7c8;padding: 10px 10px 5px 10px;'><img src='http://www.thehispace.com/images/logo.png' alt='HiSpace Logo' style='height: 60px' /></div>"
+                   + "<br>"
+                   + "<div>"
+                   + "<div>Dear <span style='font-weight:600'> HiSpace Team,</span></div>"
+
+                   + "<div style='margin: 5px 0; font-weight:600;'>You have one new investor enquiry</div>"
+                   + "<table style='border-collapse: collapse;border: 1px solid #a2a2a2;background: #fbe7c8;width: 100%'>"
+                   + "<tboby>"
+                   + "<tr>"
+                   + "<th colspan='2' style='text-align:center;border: 1px solid #a2a2a2; padding: 10px;'>Investor Details</th>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>Investor Id</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.InvestorId + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>FirstName</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.FirstName + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>LastName</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.LastName + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>Email</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.Email + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>Phone</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.Phone + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>Investment Type</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.InvestmentType + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>Property Type</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.PropertyType + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>Currency</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.Currency + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>Min Range</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.MinRange + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>Max Range</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.MaxRange + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>During</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.During + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>Country</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.Country + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>State</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.State + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>District/City</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.District + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>Neighborhood</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.Neighborhood + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>Comment</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.Comment + "</td>"
+                   + "</tr>"
+                   + "<tr>"
+                   + "<th style='border: 1px solid #a2a2a2; padding: 10px;'>CreatedDateTime</th>"
+                   + "<td style='border: 1px solid #a2a2a2; padding: 10px;'>" + investor.CreatedDateTime + "</td>"
+                   + "</tr>"
+                   + "</tbody>"
+                   + "</table>"
+
+                   + "<br>"
+                   + "<br>"
+
+                   + "<div>Sincerely,</div>"
+                   + "<div style=''font-weight: 700;>HiSpace Team</div>"
+                   + "</div>"
+
+                   + "<br>" + "<br>"
+                   + "<div style='color:#999999;font-size:11px;text-align:center;'> ©2020 HiSpace | Plot No. 267 | 2nd Floor | 2nd Main Road | Nehru Nagar | Kandanchavadi | Chennai | 600096"
+                  + "</div>"
+
+                   + "</div>"
+
+                   + "<br>" + "<br>"
+                   + "<div style='text-align: center'>"
+                   + "<a style='color:#000000;font-size:10px;text-decoration:none;' href='https://www.hdsre.com/' target='_blank'><span style='font-family:Helvetica Neue,Helvetica,Arial,Verdana,sans-serif;font-size:12px;opacity:0.75;color:#000000'>Powered by <em style='font-style:normal;text-decoration:underline;font-weight:bold'> Highbrow Diligence Services Limited</em>®</span></a>"
+                   + "</div>"
+
+                   + "</div>"
+                   ;
+                mm.IsBodyHtml = true;
+
+                var smtpClient = new SmtpClient();
+                smtpClient.UseDefaultCredentials = UseDefaultCredentials;
+                smtpClient.Host = Host;
+                smtpClient.Port = Port;
+                smtpClient.Credentials = new NetworkCredential(email, password);
+                smtpClient.EnableSsl = EnableSsl;
+
+                try
+                {
+                    //smtpClient.Send("email", "recipient", "subject", "body");
+                    smtpClient.Send(mm);
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        //Investor success
+        public bool SendInvestorSuccess(string FirstName, string LastName, string InvestorEmail)
+        {
+            using (MailMessage mm = new MailMessage(email, "tamilcbharath@gmail.com"))
+            {
+                mm.From = new MailAddress(email, "HiSpace Team");
+                mm.Subject = "Success";
+                mm.Body = "<div style='background: #2ecc71;padding: 50px 30px 15px 30px;'>"
+                    + "<div style='width:75%; margin: 0 auto;padding: 30px;background: #fff;font-size: 14px;color: #505050;'>"
+
+                    + "<div style='text-align:center;background:#fbe7c8;padding: 10px 10px 5px 10px;'><img src='http://www.thehispace.com/images/logo.png' alt='HiSpace Logo' style='height: 60px' /></div>"
+
+                    + "<div>"
+                    + "<div> <h1> <span style='font-weight:600'>Welcome to HiSpace!</span> </h1></div>"
+
+                    + "<div>Dear <span style='font-weight:600'>" + FirstName+" "+LastName + ",</span></div>"
+                    + "<div style='margin: 5px 0;'>We would like to acknowledge that we have received your request.</div>"
+                    + "<div style='margin: 5px 0;'>A support representative will be reviewing your request and will send you a personal response (usually within 24 hours).</div>"
+                    + "<div style='margin: 5px 0;'>Thank you for partnering with HiSpace.</div>"
+                    + "<br>"
+                    + "<br>"
+
+
+                    + "<div>Sincerely,</div>"
+                    + "<div style=''font-weight: 700;>HiSpace Team</div>"
+                    + "</div>"
+
+                    + "<br>" + "<br>"
+                    + "<div style='color:#999999;font-size:11px;text-align:center;'> ©2020 HiSpace | Plot No. 267 | 2nd Floor | 2nd Main Road | Nehru Nagar | Kandanchavadi | Chennai | 600096"
+                   + "</div>"
+
+                    + "</div>"
+
+                    + "<br>" + "<br>"
+                    + "<div style='text-align: center'>"
+                    + "<a style='color:#000000;font-size:10px;text-decoration:none;' href='https://www.hdsre.com/' target='_blank'><span style='font-family:Helvetica Neue,Helvetica,Arial,Verdana,sans-serif;font-size:12px;opacity:0.75;color:#000000'>Powered by <em style='font-style:normal;text-decoration:underline;font-weight:bold'> Highbrow Diligence Services Limited</em>®</span></a>"
+                    + "</div>"
+
+                    + "</div>"
+                    ;
+                mm.IsBodyHtml = true;
+
+                var smtpClient = new SmtpClient();
+                smtpClient.UseDefaultCredentials = UseDefaultCredentials;
+                smtpClient.Host = Host;
+                smtpClient.Port = Port;
+                smtpClient.Credentials = new NetworkCredential(email, password);
+                smtpClient.EnableSsl = EnableSsl;
+
+                try
+                {
+                    //smtpClient.Send("email", "recipient", "subject", "body");
+                    smtpClient.Send(mm);
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+
+    }
 }

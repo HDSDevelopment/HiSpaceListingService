@@ -27,5 +27,6 @@ namespace HiSpaceListingService.Models
 		public DbSet<Enquiry> Enquiries { get; set; }
 		//public DbSet<RERoles> RERoless { get; set; }
 		public DbSet<UserListing> UserListings { get; set; }
+		public DbSet<Investor> Investors { get; set; }
 	}
 }

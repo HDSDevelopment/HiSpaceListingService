@@ -36,6 +36,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\HiSpaceListingModels\HiSpaceListingModels.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="HiSpaceListingModels">
       <HintPath>..\HiSpaceListingModels\bin\Debug\netcoreapp3.1\HiSpaceListingModels.dll</HintPath>
     </Reference>
