@@ -8,6 +8,7 @@ using HiSpaceListingService.ViewModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using HiSpaceListingService.Utilities;
 
 namespace HiSpaceListingService.Controllers
 {
@@ -33,7 +34,7 @@ namespace HiSpaceListingService.Controllers
 			{
 				SearchFor = "Sale";
 				MaxValue = (from d in Listings
-								where d.CMCW_PropertyFor == SearchFor && d.RentalHour == Hour && d.RentalDay == Day && d.RentalMonth == Month
+							where d.CMCW_PropertyFor == SearchFor && d.RentalHour == Hour && d.RentalDay == Day && d.RentalMonth == Month
 							select d.PriceMax).Max();
 			}
 			else
@@ -98,7 +99,7 @@ namespace HiSpaceListingService.Controllers
 		/// <returns>The list of Properties by its location.</returns>
 		// GET: api/Listing/GetListingByLocation
 		[HttpGet("GetListingPropertyByLocation/{Location}")]
-		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetListingPropertyByLocation(string Location)
+		public async Task<ActionResult> GetListingPropertyByLocation(string Location)
 		{
 			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
 			var Listings = await _context.Listings.AsNoTracking().ToListAsync();
@@ -222,7 +223,29 @@ namespace HiSpaceListingService.Controllers
 				vModel.Add(property);
 			}
 			if (vModel.Count > 0)
-				return vModel;
+				return Ok(vModel);
+
+			return NotFound();
+		}
+
+		[Route("GetListingPropertyByLocationWithFavorites/{userId}/{Location}")]
+		[HttpGet]
+		public async Task<ActionResult> GetListingPropertyByLocationWithFavorites(int userId, string Location)
+		{
+			try
+			{
+				ActionResult actionResult = await GetListingPropertyByLocation(Location);
+				List<PropertyDetailResponse> response = await ActionResultUtility.GetPropertyDetailResponses(userId,actionResult,_context);
+
+				if (response != null)
+					return Ok(response);
+
+				return NotFound();
+			}
+			catch (Exception ex)
+			{
+				StatusCode(StatusCodes.Status500InternalServerError);
+			}
 
 			return NotFound();
 		}
@@ -233,7 +256,7 @@ namespace HiSpaceListingService.Controllers
 		/// <returns>The list of Properties by its type.</returns>
 		// GET: api/Listing/GetListingByType
 		[HttpGet("GetListingPropertyByType/{Type}")]
-		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetListingPropertyByType(string Type)
+		public async Task<ActionResult> GetListingPropertyByType(string Type)
 		{
 			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
 			IEnumerable<Listing> properties = await _context.Listings.Where(m => m.Status == true && m.AdminStatus == true && m.ListingType == Type && m.ListingType != "RE-Professional" && m.DeletedStatus == false).OrderByDescending(d => d.CreatedDateTime).ToListAsync();
@@ -328,7 +351,29 @@ namespace HiSpaceListingService.Controllers
 				vModel.Add(property);
 			}
 			if (vModel.Count > 0)
-				return vModel;
+				return Ok(vModel);
+
+			return NotFound();
+		}
+
+		[Route("GetListingPropertyByTypeWithFavorites/{userId}/{Type}")]
+		[HttpGet]
+		public async Task<ActionResult> GetListingPropertyByTypeWithFavorites(int userId, string Type)
+		{
+			try
+			{
+				ActionResult actionResult = await GetListingPropertyByType(Type);
+				List<PropertyDetailResponse> response = await ActionResultUtility.GetPropertyDetailResponses(userId,actionResult,_context);
+
+				if (response != null)
+					return Ok(response);
+
+				return NotFound();
+			}
+			catch (Exception ex)
+			{
+				StatusCode(StatusCodes.Status500InternalServerError);
+			}
 
 			return NotFound();
 		}
@@ -339,7 +384,7 @@ namespace HiSpaceListingService.Controllers
 		/// <returns>The list of Properties by its user.</returns>
 		// GET: api/Listing/GetListingByUser
 		[HttpGet("GetListingPropertyByUser/{User}")]
-		public async Task<ActionResult<IEnumerable<PropertyDetailResponse>>> GetListingPropertyByUser(int User)
+		public async Task<ActionResult> GetListingPropertyByUser(int User)
 		{
 			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
 			IEnumerable<Listing> properties = await _context.Listings.Where(m => m.Status == true && m.AdminStatus == true && m.UserId == User && m.ListingType != "RE-Professional" && m.DeletedStatus == false).OrderByDescending(d => d.CreatedDateTime).ToListAsync();
@@ -434,7 +479,33 @@ namespace HiSpaceListingService.Controllers
 				vModel.Add(property);
 			}
 			if (vModel.Count > 0)
-				return vModel;
+				return Ok(vModel);
+
+			return NotFound();
+		}
+
+		/// <summary>
+		/// Get favorite property list by user
+		/// </summary>
+		/// <returns>The list of favorite Properties by its user.</returns>
+		// GET: api/Listing/GetListingPropertyByUserWithFavorites/LoginUserId/SearchUserId
+		[HttpGet("GetListingPropertyByUserWithFavorites/{LoginUserId}/{SearchUserId}")]
+		public async Task<ActionResult> GetListingPropertyByUserWithFavorites(int LoginUserId, int SearchUserId)
+		{
+			try
+			{
+				ActionResult actionResult = await GetListingPropertyByUser(SearchUserId);
+				List<PropertyDetailResponse> response = await ActionResultUtility.GetPropertyDetailResponses(LoginUserId, actionResult,_context);
+
+				if (response != null)
+					return Ok(response);
+
+				return NotFound();
+			}
+			catch (Exception ex)
+			{
+				StatusCode(StatusCodes.Status500InternalServerError);
+			}
 
 			return NotFound();
 		}
