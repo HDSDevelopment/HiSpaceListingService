@@ -633,7 +633,7 @@ namespace HiSpaceListingService.Controllers
 
 		[Route("GetPeopleByListingId/{ListingId}")]
 		[HttpGet]
-		public async Task<ActionResult<List<PropertyPeopleResponse>>> GetPeopleByListingId(int ListingId)
+		public async Task<ActionResult> GetPeopleByListingId(int ListingId)
 		{
 			IEnumerable<Listing> listings = await _context.Listings.ToListAsync();
 			IEnumerable<User> operators = await _context.Users.ToListAsync();
@@ -743,9 +743,31 @@ namespace HiSpaceListingService.Controllers
 			}
 
 			if (professionalsResponse.Count > 0)
-				return professionalsResponse;
+				return Ok(professionalsResponse);
 			return NotFound();
 
+		}
+
+		[Route("GetPeopleByListingIdWithFavorites/{userId}/{ListingId}")]
+		[HttpGet]
+		public async Task<ActionResult> GetPeopleByListingIdWithFavorites(int userId, int ListingId)
+		{
+			try
+			{
+				ActionResult actionResult = await GetPeopleByListingId(ListingId);
+				List<PropertyPeopleResponse> response = await ActionResultUtility.GetPropertyPeopleResponses(userId,actionResult,_context);
+
+				if (response != null)
+					return Ok(response);
+
+				return NotFound();
+			}
+			catch (Exception ex)
+			{
+				StatusCode(StatusCodes.Status500InternalServerError);
+			}
+
+			return NotFound();
 		}
 
 		/// <summary>

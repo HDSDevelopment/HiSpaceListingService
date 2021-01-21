@@ -9,6 +9,7 @@ using HiSpaceListingService.ViewModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using HiSpaceListingService.Utilities;
 //using StackExchange.Profiling;
 
 namespace HiSpaceListingService.Controllers
@@ -2771,7 +2772,7 @@ namespace HiSpaceListingService.Controllers
 
 		[Route("GetAllPeopleList")]
 		[HttpGet]
-		public async Task<ActionResult<List<PropertyPeopleResponse>>> GetAllPeopleList()
+		public async Task<ActionResult> GetAllPeopleList()
 		{
 			IEnumerable<Listing> listings = await _context.Listings.ToListAsync();
 			IEnumerable<User> operators = await _context.Users.ToListAsync();
@@ -2881,7 +2882,29 @@ namespace HiSpaceListingService.Controllers
 			}
 
 			if (professionalsResponse.Count > 0)
-				return professionalsResponse;
+				return Ok(professionalsResponse);
+			return NotFound();
+		}
+
+		[Route("GetAllPeopleListWithFavorites/{userId}")]
+		[HttpGet]
+		public async Task<ActionResult> GetAllPeopleListWithFavorites(int userId)
+		{
+			try
+			{
+				ActionResult actionResult = await GetAllPeopleList();
+				List<PropertyPeopleResponse> response = await ActionResultUtility.GetPropertyPeopleResponses(userId,actionResult,_context);
+
+				if (response != null)
+					return Ok(response);
+
+				return NotFound();
+			}
+			catch (Exception ex)
+			{
+				StatusCode(StatusCodes.Status500InternalServerError);
+			}
+
 			return NotFound();
 		}
 
