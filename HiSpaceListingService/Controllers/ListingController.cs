@@ -1523,7 +1523,6 @@ namespace HiSpaceListingService.Controllers
 
 				completedCount = GetCompletedFieldsCount(listing.Name, completedCount);
 				completedCount = GetCompletedFieldsCount(listing.CMCW_PropertyFor, completedCount);
-				completedCount = GetCompletedFieldsCount(listing.CMCW_PropertyFor, completedCount);
 				completedCount = GetCompletedFieldsCount(listing.CommercialType, completedCount);
 				completedCount = GetCompletedFieldsCount(listing.CommercialInfraType, completedCount);
 				completedCount = GetCompletedFieldsCount(listing.SpaceSize, completedCount);
