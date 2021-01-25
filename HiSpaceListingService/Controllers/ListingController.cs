@@ -47,13 +47,17 @@ namespace HiSpaceListingService.Controllers
 
 			if (UserType == 2 || (UserType == 1 && Type == "My"))
 			{
-				var enquiries = await _context.Enquiries.Where(d => d.Sender_UserId == UserId).ToListAsync();
+				var enquiries = await _context.Enquiries.AsNoTracking()
+															.Where(d => d.Sender_UserId == UserId)
+															.ToListAsync();
 
 				await AddToEnquiryTable(enquiryTable, enquiries);
 			}
 			else if (UserType == 1 && Type == "User")
 			{
-				var enquiries = await _context.Enquiries.Where(d => d.Listing_UserId == UserId).ToListAsync();
+				var enquiries = await _context.Enquiries.AsNoTracking()
+															.Where(d => d.Listing_UserId == UserId)
+															.ToListAsync();
 
 				await AddToEnquiryTable(enquiryTable, enquiries);
 			}
@@ -88,6 +92,7 @@ namespace HiSpaceListingService.Controllers
 				enquiryTable.Add(list);
 			}
 		}
+
 
 		[HttpGet]
 		[Route("GetListingsByUserId/{UserId}")]
@@ -689,10 +694,13 @@ namespace HiSpaceListingService.Controllers
 				REProf.OperatorName = linked.OperatorName;
 				REProf.LinkingStatus = linked.LinkingStatus;
 				REProf.ImageUrl = linked.ImageUrl;
-				REProf.REFirstName = listings.Where(d => d.ListingId == GetListingIdOnReProfessional)
-											.Select(d => d.RE_FirstName)
+				var REName = (from listing in listings
+							  where listing.ListingId == GetListingIdOnReProfessional
+							  select new { listing.RE_FirstName, listing.RE_LastName })
 											.First();
-				REProf.RELastName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_LastName).First();
+
+				REProf.REFirstName = REName.RE_FirstName;
+				REProf.RELastName = REName.RE_LastName;
 				vModel.LinkedREPRofessionals.Add(REProf);
 			}
 
