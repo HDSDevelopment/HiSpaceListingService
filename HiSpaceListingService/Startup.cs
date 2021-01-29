@@ -12,6 +12,7 @@ using System.IO;
 using System.Reflection;
 //using StackExchange.Profiling;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace HiSpaceListingService
 {
@@ -27,8 +28,6 @@ namespace HiSpaceListingService
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-
-
 			//Miniprofiler start
 			//services.AddMemoryCache();
 			//services.AddMiniProfiler(options => options.RouteBasePath = "/profiler").AddEntityFramework();
@@ -38,7 +37,7 @@ namespace HiSpaceListingService
 
 			services.AddDbContextPool<HiSpaceListingContext>(opt => opt.UseSqlServer(Configuration["ConnectionString:HiSpaceListingDB"]));
 
-			Task.Run(() =>
+			/* Task.Run(() =>
 			{
 				var optionsBuilder = new DbContextOptionsBuilder<HiSpaceListingContext>();
 				optionsBuilder.UseSqlServer(Configuration["ConnectionString:HiSpaceListingDB"]);
@@ -46,8 +45,9 @@ namespace HiSpaceListingService
 				using (HiSpaceListingContext dbContext = new HiSpaceListingContext(optionsBuilder.Options))
 				{
 					var model = dbContext.Model;
+					
 				}
-			});
+			});*/
 
 			//services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
@@ -59,7 +59,8 @@ namespace HiSpaceListingService
 
 			services.AddControllers();
 
-			//services.AddCors(CorsHandler);	
+			//services.AddCors(CorsHandler);
+			services.AddHostedService<WarmupHostedService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
