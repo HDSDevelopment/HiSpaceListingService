@@ -2082,15 +2082,15 @@ namespace HiSpaceListingService.Controllers
 														select userListing).ToListAsync();
 
 				Listing spaceListing = null;
-
+				PaginationModel<PropertyDetailResponse> response = new PaginationModel<PropertyDetailResponse>();
 				if (actionResult is OkObjectResult objectResult)
 				{
 					ObjectResult result = (ObjectResult)actionResult;
-					List<PropertyDetailResponse> response = (List<PropertyDetailResponse>)result.Value;
-
+					//List<PropertyDetailResponse> response = (List<PropertyDetailResponse>)result.Value;
+					response.CurrentPageData = (List<PropertyDetailResponse>)result.Value;
 					foreach (UserListing userListing in userListings)
 					{
-						spaceListing = (from property in response
+						spaceListing = (from property in response.CurrentPageData
 										where property.SpaceListing != null &&
 										property.SpaceListing.ListingId == userListing.ListingId
 										select property.SpaceListing).SingleOrDefault();
@@ -2120,10 +2120,11 @@ namespace HiSpaceListingService.Controllers
 			{
 				ActionResult actionResult = await GetLatestPropertiesCommercialAndCoworking();
 
+				PaginationModel<PropertyDetailResponse>  response = new PaginationModel<PropertyDetailResponse>();
 				if (actionResult is OkObjectResult objectResult)
 				{
 					ObjectResult result = (ObjectResult)actionResult;
-					List<PropertyDetailResponse> response = (List<PropertyDetailResponse>)result.Value;
+					response.CurrentPageData = (List<PropertyDetailResponse>)result.Value;
 					return Ok(response);
 				}
 			}
@@ -2541,10 +2542,10 @@ namespace HiSpaceListingService.Controllers
 			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
 
 			List<Listing> properties = await _context.Listings.Where(m => m.Status == true &&
-																																	m.AdminStatus == true &&
-																																	m.ListingType != "RE-Professional" &&
-																																	m.DeletedStatus == false)
-																																	.ToListAsync();
+																																											m.AdminStatus == true &&
+																																											m.ListingType != "RE-Professional" &&
+																																											m.DeletedStatus == false)
+																																											.ToListAsync();
 
 			if (properties == null)
 				return BadRequest();
@@ -2642,51 +2643,6 @@ namespace HiSpaceListingService.Controllers
 
 			return NotFound();
 		}
-
-		[Route("GetAllPropertyListCommercialAndCoworkingWithFavorites/{userId}")]
-		[HttpGet]
-		public async Task<ActionResult> GetAllPropertyListCommercialAndCoworkingWithFavorites(int userId)
-		{
-			try
-			{
-				ActionResult actionResult = await GetAllPropertyListCommercialAndCoworking();
-				List<UserListing> userListings = await (from userListing in _context.UserListings
-														where userListing.UserId == userId
-														select userListing).ToListAsync();
-
-				Listing spaceListing = null;
-
-				if (actionResult is OkObjectResult objectResult)
-				{
-
-					ObjectResult result = (ObjectResult)actionResult;
-					List<PropertyDetailResponse> response = (List<PropertyDetailResponse>)result.Value;
-
-					foreach (UserListing userListing in userListings)
-					{
-						spaceListing = (from property in response
-										where property.SpaceListing != null &&
-										property.SpaceListing.ListingId == userListing.ListingId
-										select property.SpaceListing)
-																					.SingleOrDefault();
-
-						if (spaceListing != null)
-						{
-							spaceListing.IsFavorite = true;
-							spaceListing.FavoriteId = userListing.Id;
-						}
-					}
-					return Ok(response);
-				}
-			}
-			catch (Exception ex)
-			{
-				StatusCode(StatusCodes.Status500InternalServerError);
-			}
-
-			return NotFound();
-		}
-
 
 		[Route("GetAllPropertyList")]
 		[HttpGet]
@@ -2963,6 +2919,51 @@ namespace HiSpaceListingService.Controllers
 			return NotFound();
 		}
 
+		[Route("GetAllPropertyListCommercialAndCoworkingWithFavorites/{userId}")]
+		[HttpGet]
+		public async Task<ActionResult> GetAllPropertyListCommercialAndCoworkingWithFavorites(int userId)
+		{
+			PaginationModel<PropertyDetailResponse> response = new PaginationModel<PropertyDetailResponse>();
+			try
+			{
+				ActionResult actionResult = await GetAllPropertyListCommercialAndCoworking();
+				List<UserListing> userListings = await (from userListing in _context.UserListings
+														where userListing.UserId == userId
+														select userListing).ToListAsync();
+
+				Listing spaceListing = null;
+
+				if (actionResult is OkObjectResult objectResult)
+				{
+
+					ObjectResult result = (ObjectResult)actionResult;
+					response.CurrentPageData = (List<PropertyDetailResponse>)result.Value;
+
+					foreach (UserListing userListing in userListings)
+					{
+						spaceListing = (from property in response.CurrentPageData
+										where property.SpaceListing != null &&
+										property.SpaceListing.ListingId == userListing.ListingId
+										select property.SpaceListing)
+										.SingleOrDefault();
+
+						if (spaceListing != null)
+						{
+							spaceListing.IsFavorite = true;
+							spaceListing.FavoriteId = userListing.Id;
+						}
+					}
+					return Ok(response);
+				}
+			}
+			catch (Exception ex)
+			{
+				StatusCode(StatusCodes.Status500InternalServerError);
+			}
+
+			return NotFound();
+		}
+
 		//pagination calls
 		[Route("GetAllPropertyListCommercialAndCoworkingPaged/{currentPageNumber}")]
 		[HttpGet]
@@ -2973,24 +2974,24 @@ namespace HiSpaceListingService.Controllers
 			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
 
 			List<int> propertyIds = await (from listing in _context.Listings.AsNoTracking()
-										   where listing.Status == true &&
-																						   listing.AdminStatus == true &&
-																						   listing.ListingType != "RE-Professional" &&
-																						   listing.DeletedStatus == false
+										   where listing.Status == true 
+										   && listing.AdminStatus == true 
+										   && listing.ListingType != "RE-Professional" 
+										   && listing.DeletedStatus == false
 										   orderby listing.ListingId
 										   select listing.ListingId).ToListAsync();
 
 			pagedModel.Count = propertyIds.Count;
 			pagedModel.CurrentPage = currentPageNumber;
 			int countToSkip = (currentPageNumber - 1) * pagedModel.PageSize;
-			propertyIds = propertyIds.
-															Skip(countToSkip)
-															.Take(pagedModel.PageSize)
-															.ToList();
+			propertyIds = propertyIds
+				.Skip(countToSkip)
+				.Take(pagedModel.PageSize)
+				.ToList();
 
 			List<Listing> properties = await _context.Listings.AsNoTracking()
-																								.Where(n => propertyIds.Contains(n.ListingId))
-																								.ToListAsync();
+										.Where(n => propertyIds.Contains(n.ListingId))
+										.ToListAsync();
 
 			if (properties == null)
 				return BadRequest();
