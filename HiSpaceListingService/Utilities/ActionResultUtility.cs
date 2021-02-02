@@ -11,10 +11,10 @@ namespace HiSpaceListingService.Utilities
 {
     public static class ActionResultUtility
     {
-        public static async Task<List<PropertyDetailResponse>> GetPropertyDetailResponses(int userId, ActionResult actionResult,
+        public static async Task<PaginationModel<PropertyDetailResponse>> GetPropertyDetailResponses(int userId, ActionResult actionResult,
                                                                             HiSpaceListingContext _context)
         {
-            List<PropertyDetailResponse> response = null;
+            PaginationModel<PropertyDetailResponse> response = null;
             List<UserListing> userListings = await (from userListing in _context.UserListings
                                                     where userListing.UserId == userId
                                                     select userListing).ToListAsync();
@@ -25,11 +25,11 @@ namespace HiSpaceListingService.Utilities
             {
 
                 ObjectResult result = (ObjectResult)actionResult;
-                response = (List<PropertyDetailResponse>)result.Value;
+                response = (PaginationModel<PropertyDetailResponse>)result.Value;
 
                 foreach (UserListing userListing in userListings)
                 {
-                    spaceListing = (from property in response
+                    spaceListing = (from property in response.CurrentPageData
                                     where property.SpaceListing != null &&
                                     property.SpaceListing.ListingId == userListing.ListingId
                                     select property.SpaceListing)
