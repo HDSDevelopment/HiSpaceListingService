@@ -110,14 +110,12 @@ namespace HiSpaceListingService.Controllers
 															   property.locality == Location
 												   orderby property.CreatedDateTime descending
 												   select property.ListingId)
-																										.ToListAsync();
+													.ToListAsync();
 
 			if (filteredPropertyIds.Count <= 0)
 				NotFound();
 
-			PaginationModel<PropertyDetailResponse> pagedModel = await PropertyPaginationModelGenerator.GetPagedModelFromPropertyIds(_context,
-																																			filteredPropertyIds,
-																																			currentPageNumber);
+			PaginationModel<PropertyDetailResponse> pagedModel = await PropertyPaginationModelGenerator.GetPagedModelFromPropertyIds(_context,filteredPropertyIds,currentPageNumber);
 			return Ok(pagedModel);
 		}
 
@@ -199,105 +197,22 @@ namespace HiSpaceListingService.Controllers
 		/// </summary>
 		/// <returns>The list of Properties by its user.</returns>
 		// GET: api/Listing/GetListingByUser
-		[HttpGet("GetListingPropertyByUser/{User}")]
-		public async Task<ActionResult> GetListingPropertyByUser(int User)
+		[HttpGet("GetListingPropertyByUser/{User}/{currentPageNumber}")]
+		public async Task<ActionResult> GetListingPropertyByUser(int User, int currentPageNumber)
 		{
-			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
-			IEnumerable<Listing> properties = await _context.Listings.Where(m => m.Status == true && m.AdminStatus == true && m.UserId == User && m.ListingType != "RE-Professional" && m.DeletedStatus == false).OrderByDescending(d => d.CreatedDateTime).ToListAsync();
-
-			if (properties == null)
-				return BadRequest();
-
-			foreach (var item in properties)
-			{
-				PropertyDetailResponse property = new PropertyDetailResponse();
-				property.SpaceListing = item;
-				property.SpaceUser = await _context.Users.SingleOrDefaultAsync(d => d.UserId == item.UserId);
-
-				List<Amenity> amenities = await _context.Amenitys.ToListAsync();
-				property.AvailableAmenities = (from amenity in amenities
-											   where amenity.ListingId == item.ListingId && amenity.Status == true
-											   select amenity)
-										.Count();
-
-				List<Facility> facilities = await _context.Facilitys.ToListAsync();
-				property.AvailableFacilities = (from facility in facilities
-												where facility.ListingId == item.ListingId && facility.Status == true
-												select facility)
-										.Count();
-
-				IEnumerable<REProfessionalMaster> professionals = await _context.REProfessionalMasters.ToListAsync();
-				property.AvailableProjects = (from professional in professionals
-											  where professional.ListingId == item.ListingId && professional.Status == true
-											  select professional)
-									.Count();
-
-				IEnumerable<ListingImages> images = await _context.ListingImagess.ToListAsync();
-				property.ListingImagesList = (from image in images
-											  where image.ListingId == item.ListingId
-											  select image)
-											.ToList();
-
-				IEnumerable<HealthCheck> healthChecks = await _context.HealthChecks.ToListAsync();
-				property.AvailableHealthCheck = (from healthCheck in healthChecks
-												 where healthCheck.ListingId == item.ListingId && healthCheck.Status == true
-												 select healthCheck).Count();
-
-				IEnumerable<GreenBuildingCheck> greenBldingChecks = await _context.GreenBuildingChecks.ToListAsync();
-				property.AvailableGreenBuildingCheck = (from GBC in greenBldingChecks
-														where GBC.ListingId == item.ListingId && GBC.Status == true
-														select GBC)
-													.Count();
-
-				//geting linked re-prof			
-				var linkedREProf = (from r in _context.REProfessionalMasters
-									where (
-									(((r.PropertyReraId != null && item.CMCW_ReraId != null) && (r.PropertyReraId == item.CMCW_ReraId))
-										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_CTSNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_CTSNumber))
-										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_MilkatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_MilkatNumber))
-										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_PlotNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_PlotNumber))
-										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_SurveyNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_SurveyNumber))
-										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_PropertyTaxBillNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_PropertyTaxBillNumber))
-										 || ((r.PropertyAdditionalIdNumber != null && item.CMCW_GatNumber != null) && (r.PropertyAdditionalIdNumber == item.CMCW_GatNumber)))
-										 && (r.LinkingStatus == "Approved") && (r.DeletedStatus == false))
-									select new
-									{
-										item.ListingId,
-										r.REProfessionalMasterId,
-										item.UserId,
-										r.ProjectRole,
-										r.ProjectName,
-										r.ImageUrl,
-										r.OperatorName,
-										r.LinkingStatus
-									}).ToList();
-
-				property.LinkedREProf = new List<LinkedREPRofessionals>();
-				foreach (var linked in linkedREProf)
-				{
-					LinkedREPRofessionals REProf = new LinkedREPRofessionals();
-					var GetListingIdOnReProfessional = _context.REProfessionalMasters.Where(d => d.REProfessionalMasterId == linked.REProfessionalMasterId).Select(d => d.ListingId).First();
-					REProf.Property_ListingId = linked.ListingId;
-					REProf.ReProfessional_ListingId = GetListingIdOnReProfessional;
-					REProf.REProfessionalMasterId = linked.REProfessionalMasterId;
-					REProf.UserId = linked.UserId;
-					REProf.ProjectRole = linked.ProjectRole;
-					REProf.OperatorName = linked.OperatorName;
-					REProf.LinkingStatus = linked.LinkingStatus;
-					REProf.ProjectName = linked.ProjectName;
-					REProf.ImageUrl = linked.ImageUrl;
-					REProf.REFirstName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_FirstName).First();
-					REProf.RELastName = _context.Listings.Where(d => d.ListingId == GetListingIdOnReProfessional).Select(d => d.RE_LastName).First();
-					property.LinkedREProf.Add(REProf);
-				}
-
-				property.LinkedREProfCount = property.LinkedREProf.Count;
-				vModel.Add(property);
-			}
-			if (vModel.Count > 0)
-				return Ok(vModel);
-
-			return NotFound();
+			List<int> filteredPropertyIds = await (from property in _context.Listings.AsNoTracking()
+												   where property.Status == true &&
+												   property.AdminStatus == true &&
+												   property.UserId == User &&
+												   property.ListingType != "RE-Professional" &&
+												   property.DeletedStatus == false
+												   orderby property.CreatedDateTime descending
+												   select property.ListingId)
+			.ToListAsync();
+			PaginationModel<PropertyDetailResponse> pagedModel = await PropertyPaginationModelGenerator.GetPagedModelFromPropertyIds(_context,
+			filteredPropertyIds,
+			currentPageNumber);
+			return Ok(pagedModel);
 		}
 
 		/// <summary>
@@ -305,16 +220,19 @@ namespace HiSpaceListingService.Controllers
 		/// </summary>
 		/// <returns>The list of favorite Properties by its user.</returns>
 		// GET: api/Listing/GetListingPropertyByUserWithFavorites/LoginUserId/SearchUserId
-		[HttpGet("GetListingPropertyByUserWithFavorites/{LoginUserId}/{SearchUserId}")]
-		public async Task<ActionResult> GetListingPropertyByUserWithFavorites(int LoginUserId, int SearchUserId)
+		[HttpGet("GetListingPropertyByUserWithFavorites/{LoginUserId}/{SearchUserId}/{currentPageNumber}")]
+		public async Task<ActionResult> GetListingPropertyByUserWithFavorites(int LoginUserId, int SearchUserId, int currentPageNumber)
 		{
 			try
 			{
-				ActionResult actionResult = await GetListingPropertyByUser(SearchUserId);
-				PaginationModel<PropertyDetailResponse> response = await ActionResultUtility.GetPropertyDetailResponses(LoginUserId, actionResult,_context);
+				ActionResult actionResult = await GetListingPropertyByUser(SearchUserId, currentPageNumber);
+				PaginationModel<PropertyDetailResponse> pagedModel = await
+				ActionResultUtility.GetPropertyPageResponse(LoginUserId,
+				actionResult,
+				_context);
 
-				if (response != null)
-					return Ok(response);
+				if (pagedModel != null)
+					return Ok(pagedModel);
 
 				return NotFound();
 			}
