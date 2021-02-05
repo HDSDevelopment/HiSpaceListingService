@@ -244,124 +244,135 @@ namespace HiSpaceListingService.Controllers
 			return NotFound();
 		}
 
-		[Route("GetOperatorByUserId/{User}")]
+		[Route("GetOperatorByUserId/{User}/{currentPageNumber}")]
 		[HttpGet]
-		public async Task<ActionResult<List<PropertyOperatorResponse>>> GetOperatorByUserId(int User)
+		public async Task<ActionResult<List<PropertyOperatorResponse>>> GetOperatorByUserId(int User, int currentPageNumber)
 		{
-			List<PropertyOperatorResponse> listoperators = new List<PropertyOperatorResponse>();
+			List<int> allOperatorIds = await (from REOperator in _context.Users
+											  where REOperator.UserType == 1 &&
+													REOperator.Status == true &&
+													REOperator.UserId == User
+											  select REOperator.UserId).ToListAsync();
+			PaginationModel<PropertyOperatorResponse> model = await OperatorPaginationModelGenerator.GetPagedModelFromOperatorIds(_context, allOperatorIds, currentPageNumber);
 
-			var userGroup = (from u in _context.Users
-							 where u.UserId == User && u.Status == true
-							 select u).ToList();
-			if (userGroup != null)
-			{
-				foreach (var item in userGroup)
-				{
-					PropertyOperatorResponse operatorResponse = new PropertyOperatorResponse();
+			return Ok(model);
+			//List<PropertyOperatorResponse> listoperators = new List<PropertyOperatorResponse>();
 
-					operatorResponse.Operator = new User();
-					operatorResponse.Operator = item;
+			//var userGroup = (from u in _context.Users
+			//				 where u.UserId == User && u.Status == true
+			//				 select u).ToList();
+			//if (userGroup != null)
+			//{
+			//	foreach (var item in userGroup)
+			//	{
+			//		PropertyOperatorResponse operatorResponse = new PropertyOperatorResponse();
 
-					IEnumerable<Listing> listingsByUserID = await (from listing in _context.Listings
-																   where listing.UserId == item.UserId && listing.DeletedStatus == false
-																   select listing).ToListAsync();
+			//		operatorResponse.Operator = new User();
+			//		operatorResponse.Operator = item;
 
-					operatorResponse.TotalCommercial = (from listing in listingsByUserID
-														where listing.ListingType == "Commercial" && listing.Status == true && listing.AdminStatus == true && listing.DeletedStatus == false
-														select listing)
-														.Count();
+			//		IEnumerable<Listing> listingsByUserID = await (from listing in _context.Listings
+			//													   where listing.UserId == item.UserId && listing.DeletedStatus == false
+			//													   select listing).ToListAsync();
 
-					operatorResponse.TotalCoWorking = (from listing in listingsByUserID
-													   where listing.ListingType == "Co-Working" && listing.Status == true && listing.AdminStatus == true && listing.DeletedStatus == false
-													   select listing)
-														.Count();
+			//		operatorResponse.TotalCommercial = (from listing in listingsByUserID
+			//											where listing.ListingType == "Commercial" && listing.Status == true && listing.AdminStatus == true && listing.DeletedStatus == false
+			//											select listing)
+			//											.Count();
 
-					operatorResponse.TotalREProfessional = (from listing in listingsByUserID
-															where listing.ListingType == "RE-Professional" && listing.Status == true && listing.AdminStatus == true && listing.DeletedStatus == false
-															select listing)
-															.Count();
+			//		operatorResponse.TotalCoWorking = (from listing in listingsByUserID
+			//										   where listing.ListingType == "Co-Working" && listing.Status == true && listing.AdminStatus == true && listing.DeletedStatus == false
+			//										   select listing)
+			//											.Count();
 
-					//getting roles
-					IEnumerable<int> REProfessionalIDGroup = from listing in listingsByUserID
-															 where listing.Status == true && listing.ListingType == "RE-Professional" && listing.DeletedStatus == false
-															 select listing.ListingId;
+			//		operatorResponse.TotalREProfessional = (from listing in listingsByUserID
+			//												where listing.ListingType == "RE-Professional" && listing.Status == true && listing.AdminStatus == true && listing.DeletedStatus == false
+			//												select listing)
+			//												.Count();
 
-					operatorResponse.roles = null;
+			//		//getting roles
+			//		IEnumerable<int> REProfessionalIDGroup = from listing in listingsByUserID
+			//												 where listing.Status == true && listing.ListingType == "RE-Professional" && listing.DeletedStatus == false
+			//												 select listing.ListingId;
 
-					if (REProfessionalIDGroup != null)
-					{
-						operatorResponse.roles = new List<string>();
-						foreach (var REProfessionalID in REProfessionalIDGroup)
-						{
-							operatorResponse.roles = await _context.REProfessionalMasters
-													.Where(d => d.ListingId == REProfessionalID)
-													.Select(d => d.ProjectRole)
-													.Distinct()
-													.ToListAsync();
-						}
-					}
+			//		operatorResponse.roles = null;
 
-					//geting linked re-prof
-					var linkedREProfGroup = (from listing in listingsByUserID
-											 from ReProf in _context.REProfessionalMasters
-											 where ((listing.ListingType == "Commercial" || listing.ListingType == "Co-Working") && listing.DeletedStatus == false &&
-											  (((listing.CMCW_ReraId != null && ReProf.PropertyReraId != null) && (listing.CMCW_ReraId == ReProf.PropertyReraId))
-										 || ((listing.CMCW_CTSNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_CTSNumber == ReProf.PropertyAdditionalIdNumber))
-										 || ((listing.CMCW_GatNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_GatNumber == ReProf.PropertyAdditionalIdNumber))
-										 || ((listing.CMCW_MilkatNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_MilkatNumber == ReProf.PropertyAdditionalIdNumber))
-										 || ((listing.CMCW_PlotNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_PlotNumber == ReProf.PropertyAdditionalIdNumber))
-										 || ((listing.CMCW_SurveyNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_SurveyNumber == ReProf.PropertyAdditionalIdNumber))
-										 || ((listing.CMCW_PropertyTaxBillNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_PropertyTaxBillNumber == ReProf.PropertyAdditionalIdNumber))
-										  )
-											  && (ReProf.LinkingStatus == "Approved") && ReProf.DeletedStatus == false)
-											 select new
-											 {
-												 listing.ListingId,
-												 ReProf.REProfessionalMasterId,
-												 listing.UserId,
-												 ReProf.ProjectRole,
-												 ReProf.ProjectName,
-												 ReProf.ImageUrl,
-												 ReProf.OperatorName,
-												 ReProf.LinkingStatus
-											 }).ToList();
+			//		if (REProfessionalIDGroup != null)
+			//		{
+			//			operatorResponse.roles = new List<string>();
+			//			foreach (var REProfessionalID in REProfessionalIDGroup)
+			//			{
+			//				operatorResponse.roles = await _context.REProfessionalMasters
+			//										.Where(d => d.ListingId == REProfessionalID)
+			//										.Select(d => d.ProjectRole)
+			//										.Distinct()
+			//										.ToListAsync();
+			//			}
+			//		}
 
-					operatorResponse.LinkedREProf = new List<LinkedREPRofessionals>();
-					foreach (var linked in linkedREProfGroup)
-					{
-						LinkedREPRofessionals REProf = new LinkedREPRofessionals();
-						var ListingIdOnReProfessional = _context.REProfessionalMasters
-									.Where(d => d.REProfessionalMasterId == linked.REProfessionalMasterId)
-									.Select(d => d.ListingId)
-									.First();
-						REProf.Property_ListingId = linked.ListingId;
-						REProf.ReProfessional_ListingId = ListingIdOnReProfessional;
-						REProf.REProfessionalMasterId = linked.REProfessionalMasterId;
-						REProf.UserId = linked.UserId;
-						REProf.ProjectRole = linked.ProjectRole;
-						REProf.OperatorName = linked.OperatorName;
-						REProf.LinkingStatus = linked.LinkingStatus;
-						REProf.ProjectName = linked.ProjectName;
-						REProf.ImageUrl = linked.ImageUrl;
-						REProf.REFirstName = _context.Listings
-											.Where(d => d.ListingId == ListingIdOnReProfessional)
-											.Select(d => d.RE_FirstName)
-											.First();
-						REProf.RELastName = _context.Listings
-											.Where(d => d.ListingId == ListingIdOnReProfessional)
-											.Select(d => d.RE_LastName)
-											.First();
-						operatorResponse.LinkedREProf.Add(REProf);
-					}
+			//		//geting linked re-prof
+			//		var linkedREProfGroup = (from listing in listingsByUserID
+			//								 from ReProf in _context.REProfessionalMasters
+			//								 where ((listing.ListingType == "Commercial" || listing.ListingType == "Co-Working") && listing.DeletedStatus == false &&
+			//								  (((listing.CMCW_ReraId != null && ReProf.PropertyReraId != null) && (listing.CMCW_ReraId == ReProf.PropertyReraId))
+			//							 || ((listing.CMCW_CTSNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_CTSNumber == ReProf.PropertyAdditionalIdNumber))
+			//							 || ((listing.CMCW_GatNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_GatNumber == ReProf.PropertyAdditionalIdNumber))
+			//							 || ((listing.CMCW_MilkatNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_MilkatNumber == ReProf.PropertyAdditionalIdNumber))
+			//							 || ((listing.CMCW_PlotNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_PlotNumber == ReProf.PropertyAdditionalIdNumber))
+			//							 || ((listing.CMCW_SurveyNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_SurveyNumber == ReProf.PropertyAdditionalIdNumber))
+			//							 || ((listing.CMCW_PropertyTaxBillNumber != null && ReProf.PropertyAdditionalIdNumber != null) && (listing.CMCW_PropertyTaxBillNumber == ReProf.PropertyAdditionalIdNumber))
+			//							  )
+			//								  && (ReProf.LinkingStatus == "Approved") && ReProf.DeletedStatus == false)
+			//								 select new
+			//								 {
+			//									 listing.ListingId,
+			//									 ReProf.REProfessionalMasterId,
+			//									 listing.UserId,
+			//									 ReProf.ProjectRole,
+			//									 ReProf.ProjectName,
+			//									 ReProf.ImageUrl,
+			//									 ReProf.OperatorName,
+			//									 ReProf.LinkingStatus
+			//								 }).ToList();
 
-					operatorResponse.LinkedREProfCount = operatorResponse.LinkedREProf.Count;
-					listoperators.Add(operatorResponse);
-				}
-			}
-			if (listoperators.Count > 0)
-				return listoperators;
+			//		operatorResponse.LinkedREProf = new List<LinkedREPRofessionals>();
+			//		foreach (var linked in linkedREProfGroup)
+			//		{
+			//			LinkedREPRofessionals REProf = new LinkedREPRofessionals();
+			//			var ListingIdOnReProfessional = _context.REProfessionalMasters
+			//						.Where(d => d.REProfessionalMasterId == linked.REProfessionalMasterId)
+			//						.Select(d => d.ListingId)
+			//						.First();
+			//			REProf.Property_ListingId = linked.ListingId;
+			//			REProf.ReProfessional_ListingId = ListingIdOnReProfessional;
+			//			REProf.REProfessionalMasterId = linked.REProfessionalMasterId;
+			//			REProf.UserId = linked.UserId;
+			//			REProf.ProjectRole = linked.ProjectRole;
+			//			REProf.OperatorName = linked.OperatorName;
+			//			REProf.LinkingStatus = linked.LinkingStatus;
+			//			REProf.ProjectName = linked.ProjectName;
+			//			REProf.ImageUrl = linked.ImageUrl;
+			//			REProf.REFirstName = _context.Listings
+			//								.Where(d => d.ListingId == ListingIdOnReProfessional)
+			//								.Select(d => d.RE_FirstName)
+			//								.First();
+			//			REProf.RELastName = _context.Listings
+			//								.Where(d => d.ListingId == ListingIdOnReProfessional)
+			//								.Select(d => d.RE_LastName)
+			//								.First();
+			//			operatorResponse.LinkedREProf.Add(REProf);
+			//		}
 
-			return NotFound();
+			//		operatorResponse.LinkedREProfCount = operatorResponse.LinkedREProf.Count;
+			//		listoperators.Add(operatorResponse);
+			//	}
+			//}
+			//if (listoperators.Count > 0)
+			//{
+
+			//	return listoperators;
+			//}
+
+			//return NotFound();
 
 		}
 
