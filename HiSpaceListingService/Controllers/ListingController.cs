@@ -1980,21 +1980,105 @@ namespace HiSpaceListingService.Controllers
 		{
 			int gbcChecksCount = (from propertyGBCId in gbcsPropertyIds
 								  where propertyGBCId == propertyId
-								  select propertyGBCId)
-																									.Count();
+								  select propertyGBCId).Count();
 			return gbcChecksCount;
 		}
 
 		//GetPropertyListCommercialAndCoworking/searchCriteria?ListingType=&CMCW_PropertyFor= 
-		[Route("GetPropertyListCommercialAndCoworking")]
+		[Route("GetPropertyListCommercialAndCoworking/{currentPageNumber}")]
 		[HttpPost]
-		public async Task<ActionResult> GetPropertyListCommercialAndCoworking([FromBody] PropertySearchCriteria searchCriteria)
+		public async Task<ActionResult> GetPropertyListCommercialAndCoworking(int currentPageNumber, [FromBody] PropertySearchCriteria searchCriteria)
 		{
-			List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
+
+			IQueryable<Listing> propertiesQuery = from property in _context.Listings.AsQueryable()
+												  where property.Status == true &&
+															  property.AdminStatus == true &&
+															  property.ListingType != "RE-Professional" &&
+															  property.DeletedStatus == false
+												  select property;
+
+			if (searchCriteria.IsValidListingType())
+				propertiesQuery = from property in propertiesQuery
+								  where property.ListingType == searchCriteria.ListingType
+								  orderby property.CreatedDateTime descending
+								  select property;
+
+			if (searchCriteria.IsValidCMCW_PropertyFor())
+				propertiesQuery = from property in propertiesQuery
+								  where property.CMCW_PropertyFor == searchCriteria.CMCW_PropertyFor
+								  select property;
+
+			if (searchCriteria.IsValidCoworkingType())
+				propertiesQuery = from property in propertiesQuery
+								  where property.CoworkingType == searchCriteria.CoworkingType
+								  select property;
+
+			if (searchCriteria.IsValidCommercialType())
+				propertiesQuery = from property in propertiesQuery
+								  where property.CommercialType == searchCriteria.CommercialType
+								  select property;
+
+			if (!string.IsNullOrEmpty(searchCriteria.Locality))
+				propertiesQuery = from property in propertiesQuery
+								  where property.locality == searchCriteria.Locality
+								  select property;
+
+			if (searchCriteria.IsValidPriceMin())
+				propertiesQuery = from property in propertiesQuery
+								  where property.PriceMin >= searchCriteria.PriceMin
+								  select property;
+
+			if (searchCriteria.IsValidPriceMax())
+				propertiesQuery = from property in propertiesQuery
+								  where property.PriceMax <= searchCriteria.PriceMax
+								  select property;
+
+			if (searchCriteria.IsValidPerformGBC())
+				propertiesQuery = from property in propertiesQuery
+								  join GBC in _context.GreenBuildingChecks
+									  on property.ListingId equals GBC.ListingId
+								  select property;
+
+			if (searchCriteria.IsValidPerformHealthCheck())
+				propertiesQuery = from property in propertiesQuery
+								  join healthCheck in _context.HealthChecks
+									  on property.ListingId equals healthCheck.ListingId
+								  select property;
+
+			if (searchCriteria.IsValidHour())
+				propertiesQuery = from property in propertiesQuery
+								  where property.RentalHour == searchCriteria.IsPerformHour
+								  select property;
+
+			if (searchCriteria.IsValidDay())
+				propertiesQuery = from property in propertiesQuery
+								  where property.RentalDay == searchCriteria.IsPerformDay
+								  select property;
+
+			if (searchCriteria.IsValidMonth())
+				propertiesQuery = from property in propertiesQuery
+								  where property.RentalMonth == searchCriteria.IsPerformMonth
+								  select property;
+
+			List<int> propertiesIds = await (from property in propertiesQuery.AsNoTracking()
+											 select property.ListingId).ToListAsync();
+
+			PaginationModel<PropertyDetailResponse> model = await PropertyPaginationModelGenerator
+																												.GetPagedModelFromPropertyIds(_context,
+																																							propertiesIds,
+																																							currentPageNumber);
+			return Ok(model);
+
+			/* List<PropertyDetailResponse> vModel = new List<PropertyDetailResponse>();
 
 			IEnumerable<Listing> listings = await _context.Listings.AsNoTracking().ToListAsync();
 
-			IEnumerable<Listing> properties = listings.Where(m => m.Status == true && m.AdminStatus == true && m.ListingType != "RE-Professional" && m.DeletedStatus == false).ToList();
+			List<Listing> properties = (from property in listings
+																	where property.Status == true && 
+																				property.AdminStatus == true && 
+																				property.ListingType != "RE-Professional" && 
+																				property.DeletedStatus == false
+																	select property).ToList();
 
 			IEnumerable<HealthCheck> healthChecks = await _context.HealthChecks.AsNoTracking().ToListAsync();
 
@@ -2173,7 +2257,7 @@ namespace HiSpaceListingService.Controllers
 			}
 			if (vModel.Count > 0)
 				return Ok(vModel);
-			return NotFound();
+			return NotFound();*/
 		}
 
 		//GET: api/Listing/GetPropertiesCommercialAndCoworkingWithFavoritesByUserId/347
@@ -2565,17 +2649,14 @@ namespace HiSpaceListingService.Controllers
 		}
 
 		//GET: api/Listing/GetPropertiesCommercialAndCoworkingWithFavoritesBySearch/
-		[Route("GetPropertiesCommercialAndCoworkingWithFavoritesBySearch")]
+		[Route("GetPropertiesCommercialAndCoworkingWithFavoritesBySearch/{currentPageNumber}")]
 		[HttpPost]
-		public async Task<ActionResult> GetPropertiesCommercialAndCoworkingWithFavoritesBySearch([FromBody] PropertyUserSearchCriteria criteria)
+		public async Task<ActionResult> GetPropertiesCommercialAndCoworkingWithFavoritesBySearch( int currentPageNumber, [FromBody] PropertyUserSearchCriteria criteria)
 		{
 			try
 			{
-				ActionResult actionResult = await GetPropertyListCommercialAndCoworking(criteria);
-				List<PropertyPeopleResponse> response = await ActionResultUtility.GetPropertyPeopleResponses
-																							  (criteria.UserId,
-																								actionResult,
-																								_context);
+				ActionResult actionResult = await GetPropertyListCommercialAndCoworking(currentPageNumber, criteria);
+				PaginationModel<PropertyDetailResponse> response = await ActionResultUtility.GetPropertyPageResponse(criteria.UserId,actionResult,_context);
 
 				if (response != null)
 					return Ok(response);

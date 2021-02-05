@@ -28,6 +28,7 @@ namespace HiSpaceListingService.ViewModel
         public bool? IsPerformDay { get; set; }
 
         public bool? IsPerformMonth { get; set; }
+        public int? CurrentPage { get; set; } = 0;
 
         public bool IsValidCMCW_PropertyFor()
         {
