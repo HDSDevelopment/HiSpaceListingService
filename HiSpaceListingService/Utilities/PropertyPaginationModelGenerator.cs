@@ -80,15 +80,17 @@ public static class PropertyPaginationModelGenerator
 				property.AvailableHealthCheck = GetHealthChecksCountForProperty(healthChecksPropertyIds, item.ListingId);				
 				
 				property.AvailableGreenBuildingCheck = GetGreenBuildingChecksCountForProperty(gbcsPropertyIds, item.ListingId);
-				
+
 				//geting linked re-prof
-				List<RelatedREProfessional> RelatedREProf = GetRelatedREProfessionals(projects, item);				
+				List<RelatedREProfessional> RelatedREProf = RelatedREProfessionalUtility.Get(projects, item);
 
 				property.LinkedREProf = new List<LinkedREPRofessionals>();
 
 				foreach (RelatedREProfessional professional in RelatedREProf)
 				{
-					LinkedREPRofessionals REProf = SetRelatedREProfessional(_context, projects, professional);
+					LinkedREPRofessionals REProf = RelatedREProfessionalUtility.Set(_context,
+																					projects,
+																					professional);
 					property.LinkedREProf.Add(REProf);
 				}
 
@@ -236,60 +238,60 @@ public static class PropertyPaginationModelGenerator
 						return gbcsPropIds;
 		}
 
-		static List<RelatedREProfessional> GetRelatedREProfessionals(List<REProfessionalMaster> projects, 																Listing property)
-		{
-			List<RelatedREProfessional> RelatedREProf = new List<RelatedREProfessional>();
-			RelatedREProf = (from r in projects
-									where (
-									(((r.PropertyReraId != null && property.CMCW_ReraId != null) && (r.PropertyReraId == property.CMCW_ReraId))
-									|| ((r.PropertyAdditionalIdNumber != null && property.CMCW_CTSNumber != null) && (r.PropertyAdditionalIdNumber == property.CMCW_CTSNumber))
-									|| ((r.PropertyAdditionalIdNumber != null && property.CMCW_MilkatNumber != null) && (r.PropertyAdditionalIdNumber == property.CMCW_MilkatNumber))
-									|| ((r.PropertyAdditionalIdNumber != null && property.CMCW_PlotNumber != null) && (r.PropertyAdditionalIdNumber == property.CMCW_PlotNumber))
-									|| ((r.PropertyAdditionalIdNumber != null && property.CMCW_SurveyNumber != null) && (r.PropertyAdditionalIdNumber == property.CMCW_SurveyNumber))
-									|| ((r.PropertyAdditionalIdNumber != null && property.CMCW_PropertyTaxBillNumber != null) && (r.PropertyAdditionalIdNumber == property.CMCW_PropertyTaxBillNumber))
-									|| ((r.PropertyAdditionalIdNumber != null && property.CMCW_GatNumber != null) && (r.PropertyAdditionalIdNumber == property.CMCW_GatNumber)))
-									&& (r.LinkingStatus == "Approved") && (r.DeletedStatus == false))
-									select new RelatedREProfessional
-									{
-										ListingId = property.ListingId,
-										ProjectId = r.REProfessionalMasterId,
-										UserId = property.UserId,
-										ProjectRole = r.ProjectRole,
-										ProjectName = r.ProjectName,
-										ImageUrl = r.ImageUrl,
-										OperatorName = r.OperatorName,
-										LinkingStatus = r.LinkingStatus
-									}).ToList();
-				return RelatedREProf;
-		}
+		//static List<RelatedREProfessional> GetRelatedREProfessionals(List<REProfessionalMaster> projects, 																Listing property)
+		//{
+		//	List<RelatedREProfessional> RelatedREProf = new List<RelatedREProfessional>();
+		//	RelatedREProf = (from r in projects
+		//							where (
+		//							(((r.PropertyReraId != null && property.CMCW_ReraId != null) && (r.PropertyReraId == property.CMCW_ReraId))
+		//							|| ((r.PropertyAdditionalIdNumber != null && property.CMCW_CTSNumber != null) && (r.PropertyAdditionalIdNumber == property.CMCW_CTSNumber))
+		//							|| ((r.PropertyAdditionalIdNumber != null && property.CMCW_MilkatNumber != null) && (r.PropertyAdditionalIdNumber == property.CMCW_MilkatNumber))
+		//							|| ((r.PropertyAdditionalIdNumber != null && property.CMCW_PlotNumber != null) && (r.PropertyAdditionalIdNumber == property.CMCW_PlotNumber))
+		//							|| ((r.PropertyAdditionalIdNumber != null && property.CMCW_SurveyNumber != null) && (r.PropertyAdditionalIdNumber == property.CMCW_SurveyNumber))
+		//							|| ((r.PropertyAdditionalIdNumber != null && property.CMCW_PropertyTaxBillNumber != null) && (r.PropertyAdditionalIdNumber == property.CMCW_PropertyTaxBillNumber))
+		//							|| ((r.PropertyAdditionalIdNumber != null && property.CMCW_GatNumber != null) && (r.PropertyAdditionalIdNumber == property.CMCW_GatNumber)))
+		//							&& (r.LinkingStatus == "Approved") && (r.DeletedStatus == false))
+		//							select new RelatedREProfessional
+		//							{
+		//								ListingId = property.ListingId,
+		//								ProjectId = r.REProfessionalMasterId,
+		//								UserId = property.UserId,
+		//								ProjectRole = r.ProjectRole,
+		//								ProjectName = r.ProjectName,
+		//								ImageUrl = r.ImageUrl,
+		//								OperatorName = r.OperatorName,
+		//								LinkingStatus = r.LinkingStatus
+		//							}).ToList();
+		//		return RelatedREProf;
+		//}
 
-		static LinkedREPRofessionals SetRelatedREProfessional(HiSpaceListingContext _context, 
-															IEnumerable<REProfessionalMaster> projects, 
-															RelatedREProfessional professional)
-		{
-					LinkedREPRofessionals REProf = new LinkedREPRofessionals();
-							var GetListingIdOnReProfessional = projects.Where(d => d.REProfessionalMasterId == 
-																												professional.ProjectId)
-																															.Select(d => d.ListingId)
-																															.First();
-					REProf.Property_ListingId = professional.ListingId;
-					REProf.ReProfessional_ListingId = GetListingIdOnReProfessional;
-					REProf.REProfessionalMasterId = professional.ProjectId;
-					REProf.UserId = professional.UserId;
-					REProf.ProjectRole = professional.ProjectRole;
-					REProf.OperatorName = professional.OperatorName;
-					REProf.LinkingStatus = professional.LinkingStatus;
-					REProf.ProjectName = professional.ProjectName;
-					REProf.ImageUrl = professional.ImageUrl;
+		//static LinkedREPRofessionals SetRelatedREProfessional(HiSpaceListingContext _context, 
+		//													IEnumerable<REProfessionalMaster> projects, 
+		//													RelatedREProfessional professional)
+		//{
+		//			LinkedREPRofessionals REProf = new LinkedREPRofessionals();
+		//					var GetListingIdOnReProfessional = projects.Where(d => d.REProfessionalMasterId == 
+		//																										professional.ProjectId)
+		//																													.Select(d => d.ListingId)
+		//																													.First();
+		//			REProf.Property_ListingId = professional.ListingId;
+		//			REProf.ReProfessional_ListingId = GetListingIdOnReProfessional;
+		//			REProf.REProfessionalMasterId = professional.ProjectId;
+		//			REProf.UserId = professional.UserId;
+		//			REProf.ProjectRole = professional.ProjectRole;
+		//			REProf.OperatorName = professional.OperatorName;
+		//			REProf.LinkingStatus = professional.LinkingStatus;
+		//			REProf.ProjectName = professional.ProjectName;
+		//			REProf.ImageUrl = professional.ImageUrl;
 
-					var REName = (from listing in _context.Listings.AsNoTracking()
-												where listing.ListingId == GetListingIdOnReProfessional
-												select new { listing.RE_FirstName, listing.RE_LastName })
-																.First();
+		//			var REName = (from listing in _context.Listings.AsNoTracking()
+		//										where listing.ListingId == GetListingIdOnReProfessional
+		//										select new { listing.RE_FirstName, listing.RE_LastName })
+		//														.First();
 
-					REProf.REFirstName = REName.RE_FirstName;
-					REProf.RELastName = REName.RE_LastName;
-					return REProf;				
-		}
+		//			REProf.REFirstName = REName.RE_FirstName;
+		//			REProf.RELastName = REName.RE_LastName;
+		//			return REProf;				
+		//}
 	}
 }
