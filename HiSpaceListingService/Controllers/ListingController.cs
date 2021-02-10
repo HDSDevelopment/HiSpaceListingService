@@ -2047,14 +2047,26 @@ namespace HiSpaceListingService.Controllers
 								  where property.locality == searchCriteria.Locality
 								  select property;
 
-			if (searchCriteria.IsValidPriceMin())
+			//if (searchCriteria.IsValidPriceMin())
+			//if (searchCriteria.PriceMin != 0)
+			//	propertiesQuery = from property in propertiesQuery
+			//					  where property.PriceMin >= searchCriteria.PriceMin
+			//					  select property;
+			if (searchCriteria.PriceMin == 0)
+				propertiesQuery = from property in propertiesQuery
+								  where property.PriceMin == null ||
+								  property.PriceMin >= 0
+								  select property;
+			else
 				propertiesQuery = from property in propertiesQuery
 								  where property.PriceMin >= searchCriteria.PriceMin
 								  select property;
 
-			if (searchCriteria.IsValidPriceMax())
+			//if (searchCriteria.IsValidPriceMax())
+			if (searchCriteria.PriceMax != 0)
 				propertiesQuery = from property in propertiesQuery
-								  where property.PriceMax <= searchCriteria.PriceMax
+								  where property.PriceMax <= searchCriteria.PriceMax ||
+								  property.PriceMax == null
 								  select property;
 
 			if (searchCriteria.IsValidPerformGBC())
