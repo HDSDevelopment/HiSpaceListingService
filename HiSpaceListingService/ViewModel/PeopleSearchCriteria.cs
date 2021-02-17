@@ -10,5 +10,6 @@ namespace HiSpaceListingService.ViewModel
     public string Role { get; set; }
 
     public string Locality { get; set; }
+    public int? CurrentPage { get; set; } = 0;
     }
 }

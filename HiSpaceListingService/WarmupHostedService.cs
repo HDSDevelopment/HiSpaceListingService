@@ -33,7 +33,8 @@ namespace HiSpaceListingService
                 var project = await hiSpaceContext.REProfessionalMasters.FirstOrDefaultAsync();
                 var userListing = await hiSpaceContext.UserListings.FirstOrDefaultAsync();
                 var user = await hiSpaceContext.Users.FirstOrDefaultAsync();
-                var workHour = await hiSpaceContext.WorkingHourss.FirstOrDefaultAsync();                
+                var workHour = await hiSpaceContext.WorkingHourss.FirstOrDefaultAsync();
+                var userOperator = await hiSpaceContext.UserOperators.FirstOrDefaultAsync();
             }            
         }
 

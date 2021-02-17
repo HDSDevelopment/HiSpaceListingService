@@ -516,7 +516,9 @@ namespace HiSpaceListingService.Controllers
 
 			foreach (var item in professionals)
 			{
-				response.Add(new PeopleNameSearchResponse()
+				if ((item.RE_FirstName != null) || (item.RE_LastName != null))
+				{
+					response.Add(new PeopleNameSearchResponse()
 				{
 					ListingId = item.ListingId,
 					RE_FirstName = item.RE_FirstName,
@@ -524,6 +526,7 @@ namespace HiSpaceListingService.Controllers
 					ProjectCount = projects.Count(d => d == item.ListingId)
 				});
 			}
+		}
 			return response;
 		}
 

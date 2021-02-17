@@ -196,7 +196,7 @@ namespace HiSpaceListingService.Utilities
 		}
 
 		//Signup
-		public bool SendSignup(string ToEmail, string Subject, string Name, string Password)
+		public async Task<bool> SendSignup(string ToEmail, string Subject, string Name, string Password, string activationLink)
         {
             using (MailMessage mm = new MailMessage(email, ToEmail))
             {
@@ -210,6 +210,9 @@ namespace HiSpaceListingService.Utilities
 
                     + "<div>"
                     + "<div> <h1> <span style='font-weight:600'>Welcome," + Name + "!</span> </h1></div>"
+                    + "Please click the below activation link to activate your account "
+                    + "<div>"+ activationLink + "</div>"
+                    + "<a style='display:block; margin:20px; padding:10px; text-align:center; background:#ff9900; color:#ffffff;' href=" + activationLink + "> click to activate your account </a>"
 
                     + "<div>We're excited that you've chosen The Next Generation Real-Estate Industry Evolution <span style='font-weight:600'> 'HiSpace'</span>. You're probably ready to dive right in, so let's get started!</div>"
                     + "<br>"

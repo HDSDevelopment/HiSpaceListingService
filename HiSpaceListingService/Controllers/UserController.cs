@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HiSpaceListingService.Utilities;
 using HiSpaceListingService.ViewModel;
+using System.Text.RegularExpressions;
 
 namespace HiSpaceListingService.Controllers
 {
@@ -161,12 +162,55 @@ namespace HiSpaceListingService.Controllers
 		public async Task<ActionResult<User>> AddUser([FromBody] User user)
 		{
 			user.CreatedDateTime = DateTime.Now;
+			int tokenExpiryAfterHours = 24;
+			user.TokenExpiryAt = user.CreatedDateTime.Value.AddHours(tokenExpiryAfterHours);
+
+			//string uat = Convert.ToBase64String(Guid.NewGuid().ToString().Replace("+", string.Empty).ToByteArray());
+			string uat = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+			uat = Regex.Replace(uat, @"[^0-9a-zA-Z]+", "");
+			user.ActivationToken = uat;
 
 			_context.Users.Add(user);
 			await _context.SaveChangesAsync();
+			//string activationLink = "https://www.thehispace.com/User" + user.UserId + "/" + uat;
+			string activationLink = "https://localhost:44300/User/UserActivativation?id=" + user.UserId + "&check="+uat+"";
+			//string activationLinkTest = "/Filter/PropertyOperatorPeopleAndFilterMenu?ListShowType="+ user.UserId + "&check="+ uat + "";
+
+			EmailMessage emailMessage = new EmailMessage();
+			bool deliveryStatus = await emailMessage.SendSignup(user.Email, "Account activation", user.CompanyName, user.Password ,activationLink);
 
 			return CreatedAtAction("GetUsersOnly", new { UserId = user.UserId }, user);
 		}
+
+		[HttpGet]
+		[Route("UserActivate/{id}/{check}")]
+		public async Task<ActionResult> UserActivate(int id, string check)
+		{
+			User userToActivate = await (from user in _context.Users
+										 where user.UserId == id
+										 select user)
+													.SingleOrDefaultAsync();
+			string tokenFromUrl = check;
+
+			if (userToActivate.ActivationToken != tokenFromUrl)
+				return BadRequest("InvalidToken");
+
+			if (userToActivate.TokenExpiryAt < DateTime.Now)
+				return BadRequest("ExpiredToken");
+
+			if (userToActivate == null)
+				return NotFound("UserNotFound");
+
+			userToActivate.Status = true;
+			_context.Update(userToActivate);
+			int recordsAffected = await _context.SaveChangesAsync();
+
+			if (recordsAffected > 0)
+				return Ok(userToActivate);
+
+			return StatusCode(StatusCodes.Status500InternalServerError);
+		}
+
 
 		/// <summary>
 		/// Gets the list of all Users.
@@ -426,15 +470,15 @@ namespace HiSpaceListingService.Controllers
 
 		}
 
-		//SendSignupSuccess
-		[HttpGet]
-		[Route("SendSignupSuccess/{Email}/{UserName}/{Password}")]
-		public bool SendSignupSuccess(string Email, string UserName, string Password)
-		{
-			var Subject = "Welcome To HiSpace";
-			EmailMessage email = new EmailMessage();
-			return email.SendSignup(Email, Subject, UserName, Password);
-		}
+		////SendSignupSuccess
+		//[HttpGet]
+		//[Route("SendSignupSuccess/{Email}/{UserName}/{Password}")]
+		//public bool SendSignupSuccess(string Email, string UserName, string Password)
+		//{
+		//	var Subject = "Welcome To HiSpace";
+		//	EmailMessage email = new EmailMessage();
+		//	return email.SendSignup(Email, Subject, UserName, Password);
+		//}
 
 		//BackgroundCheckEmail
 		[HttpGet]

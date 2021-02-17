@@ -67,7 +67,7 @@ namespace HiSpaceListingService.Utilities
                 operatorResponse.TotalCoWorking = GetListingsByType(listingsOfOperator, "Co-Working").Count;
                 REProfessionals = GetListingsByType(listingsOfOperator, "RE-Professional");
                 operatorResponse.TotalREProfessional = REProfessionals.Count;
-        List<int> REProfessionalIdsForOperators = GetREProfessionalIds(REProfessionals);        
+                List<int> REProfessionalIdsForOperators = GetREProfessionalIds(REProfessionals);        
                 operatorResponse.roles = await GetRoles(_context, REProfessionalIdsForOperators);
                 relatedREProfessionals = RelatedREProfessionalUtility.GetForOperator(_context,                                                                              listingsOfOperator);
                 operatorResponse.LinkedREProf = new List<LinkedREPRofessionals>();

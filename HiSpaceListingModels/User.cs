@@ -54,5 +54,12 @@ namespace HiSpaceListingModels
 		public bool TermsAndConditions { get; set; }
 		public string ProofName { get; set; }
 		public string ProofNumber { get; set; }
+
+		[NotMapped]
+		public bool IsFavorite { get; set; } = false;
+		[NotMapped]
+		public int? FavoriteId { get; set; } = null;
+		public string ActivationToken { get; set; } = null;
+		public DateTime? TokenExpiryAt { get; set; }
 	}
 }
