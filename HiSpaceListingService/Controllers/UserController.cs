@@ -174,7 +174,9 @@ namespace HiSpaceListingService.Controllers
 			await _context.SaveChangesAsync();
 			//string activationLink = "https://www.thehispace.com/User" + user.UserId + "/" + uat;
 			string activationLink = "https://localhost:44300/User/UserActivativation?id=" + user.UserId + "&check="+uat+"";
-			//string activationLinkTest = "/Filter/PropertyOperatorPeopleAndFilterMenu?ListShowType="+ user.UserId + "&check="+ uat + "";
+			//string activationLink = "https://list.thehispace.com/User/UserActivativation?id=" + user.UserId + "&check=" + uat + "";
+			//string activationLink = "https://www.thehispace.com/User/UserActivativation?id=" + user.UserId + "&check=" + uat + "";
+
 
 			EmailMessage emailMessage = new EmailMessage();
 			bool deliveryStatus = await emailMessage.SendSignup(user.Email, "Account activation", user.CompanyName, user.Password ,activationLink);
