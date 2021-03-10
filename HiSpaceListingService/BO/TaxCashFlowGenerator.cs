@@ -6,16 +6,17 @@ namespace HiSpaceListingService.BO
     public class TaxCashFlowGenerator
     {
         TaxGenerator _taxGenerator;
-        PostTaxCashFlowGenerator _postTaxCashFlowGenerator; 
-        
+        PostTaxCashFlowGenerator _postTaxCashFlowGenerator;
+
         public TaxCashFlowGenerator()
         {
             _taxGenerator = new TaxGenerator();
             _postTaxCashFlowGenerator = new PostTaxCashFlowGenerator();
         }
-        public TaxCashFlowResponse Generate(List<ValueItemResponse> netOperatingIncomeList, 
+        public TaxCashFlowResponse Generate(List<ValueItemResponse> netOperatingIncomeList,
                                                     List<ValueItemResponse> interestList,
                                             List<ValueItemResponse> leveredCashFlowList,
+                                            List<ValueItemResponse> leveredCashFlowList2,
                                                     decimal taxRatePercent,
                                                     int holdingPeriodInYears,
                                                     int additionalYears)
@@ -26,13 +27,19 @@ namespace HiSpaceListingService.BO
                                                                     taxRatePercent,
                                                                     holdingPeriodInYears,
                                                                     additionalYears);
-            
+
             taxCashFlowResponse.PostTaxCashFlow = _postTaxCashFlowGenerator.GenerateList(
-                                                                    leveredCashFlowList, 
+                                                                    leveredCashFlowList,
                                                                     taxCashFlowResponse.Tax,
                                                                     holdingPeriodInYears,
                                                                     additionalYears);
-        return taxCashFlowResponse;
+
+            taxCashFlowResponse.PostTaxCashFlow2 = _postTaxCashFlowGenerator.GenerateList(
+                                                                    leveredCashFlowList2,
+                                                                    taxCashFlowResponse.Tax,
+                                                                    holdingPeriodInYears,
+                                                                    additionalYears);
+            return taxCashFlowResponse;
         }
     }
 }

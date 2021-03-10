@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using HiSpaceListingService.DTO;
 
@@ -7,6 +8,7 @@ public class InvestmentCashFlowGenerator
     {
         AcquisitionExitValueGenerator _acquisitionExitValueGenerator;
         UnleveredCashFlowValueGenerator _unleveredCashFlowValueGenerator;
+
         
         public InvestmentCashFlowGenerator()
         {
@@ -25,12 +27,24 @@ public class InvestmentCashFlowGenerator
                                                                         .GenerateList(investment, 
                                                                         finalYearExitValue, 
                                                                         holdingPeriodInYears,
-                                                                        additionalYears);
+                                                                        additionalYears);            
+
             investmentCashFlowResponse.UnleveredCashFlowValue = _unleveredCashFlowValueGenerator
                                                                     .GenerateList(netCashFlowList,
                                                         investmentCashFlowResponse.AcquisitionExitValue,
                                                                     holdingPeriodInYears,
-                                                                    additionalYears); 
+                                                                    additionalYears);
+
+            List<ValueItemResponse> unleveredCashFlowValue2 = investmentCashFlowResponse
+                                                                .UnleveredCashFlowValue
+                                        .Select(n => new ValueItemResponse{ForYear = n.ForYear, 
+                                                                            ItemValue = n.ItemValue})
+                                        .ToList();
+            
+            unleveredCashFlowValue2[holdingPeriodInYears].ItemValue = unleveredCashFlowValue2[holdingPeriodInYears].ItemValue - investmentCashFlowResponse.AcquisitionExitValue[holdingPeriodInYears].ItemValue;
+
+            investmentCashFlowResponse.UnleveredCashFlowValue2 = unleveredCashFlowValue2;            
+
         return investmentCashFlowResponse;
         }
     }

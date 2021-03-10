@@ -6,5 +6,6 @@ namespace HiSpaceListingService.DTO
     {
         public List<ValueItemResponse> AcquisitionExitValue {get; set;}
         public List<ValueItemResponse> UnleveredCashFlowValue {get; set;}
+        public List<ValueItemResponse> UnleveredCashFlowValue2 {get; set;}
     }
 }
